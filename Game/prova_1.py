@@ -1,109 +1,80 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Nov 20 18:16:11 2020
+Prova del gioco.
 
-@author: mattc
+INDICE:
+    
+    1) IMPORT
+    2) INIZIALIZZA GIOCO
+    3) AGGIUNGI OGGETTI
+    4) FUNZIONE DI MAINLOOP
+    5) MAINLOOP
+
 """
 
 '''
-IMPORT
+1) IMPORT
 '''
 # Importa i pacchetti
-import GameToolKit as gtk
-import pygame
+import GameToolKit as gtk    # Classi del gioco
+import OBJfunctions as objf  # Funzioni degli OBJ
+import pygame                # Pacchetto standard per videogame in Python
+
 
 '''
-FUNZIONI OBJ
-'''
-def nulla(root = None, obj = None):
-    return root, obj
-
-def collinionObstacles(root = None, obj = None):
-    if obj.status:  # se è visibile
-        out = gtk.collisionDetection(root, root.obj["personaggio"][0], obj)
-        if len(out) > 0:   # c'è stata collisione
-            done = False
-            # Collided = True
-            obj.collided = True
-            if "1" in out: # collisione da destra
-                root.obj["personaggio"][0].x = obj.x + obj.w - obj.pl
-                done = True
-            if "2" in out: # collisione da sinistra
-                root.obj["personaggio"][0].x = (obj.x - 
-                        root.obj["personaggio"][0].w + obj.pl)
-                done = True
-            if ("3" in out) and (not done): # collisione dal basso
-                root.obj["personaggio"][0].y = (obj.y + obj.h -  
-                        root.obj["personaggio"][0].pv)
-            if ("4" in out) and (not done): # collisione dali'alto
-                root.obj["personaggio"][0].y = (obj.y - 
-                        root.obj["personaggio"][0].h + obj.pv)
-        else:  # non c'è stata collisione
-            obj.collided = False
-    return root, obj
-
-def collisionObjects(root = None, obj = None):
-    if obj.status == True:
-        x = root.obj["personaggio"][0].x
-        y = root.obj["personaggio"][0].y
-        w = root.obj["personaggio"][0].w
-        h = root.obj["personaggio"][0].h
-        pl = root.obj["personaggio"][0].pl
-        pv = root.obj["personaggio"][0].pv
-        
-        if x + w - pl >= obj.x and x <= obj.x + obj.w - pl:
-            if y + h - obj.pv >= obj.y and y <= obj.y + obj.h - pv:
-                obj.collided = True
-                obj.status = False
-    return root, obj
-
-'''
-INIZIALIZZA IL GIOCO
+2) INIZIALIZZA IL GIOCO
 '''
 # Inizializza il gioco
 root = gtk.GameInit(title = "Prova 1", screen_size = (1000, 500), 
-                    window_size = (1200, 700), pos_wd = (0, 0), 
+                    window_size = (1200, 700), #pos_wd = (0, 0), 
                     mainloop = lambda: prova())
 
 '''
-AGGIUNGI OGGETTI
+3) AGGIUNGI OGGETTI
 '''
 # Crea oggetto personaggio
-player = gtk.Personaggio("./Sprites/SpriteWarrior.png", (410, 390, 390, 360), 
-                         (350, 350), (100, 100), (0.2, 0.2), pl = 20, pv = 60)
-# Aggiungi il personaggio a root
-root.OBJadd("personaggio", player, nulla)
+player = gtk.Personaggio("./Sprites/Personaggi_16x16.png", (48, 0, 16, 16), 
+                         (350, 350), (75, 75), (0.2, 0.2), pl = 15, pv = 50)
+# Aggiungi il personaggio a 'root'
+root.OBJadd("personaggio", player, objf.playerAnimation)
 
 # Crea monete
-for loc in [(600, 300), (0, 0), (1000, 100)]:
-    coin = gtk.Oggetto("./Sprites/Coin.png", (335, 80, 450, 720), loc, 
-                   (35, 58), "coin", pv = 15, pl = 0)
-    root.OBJadd("oggetto", coin, collisionObjects)
+for loc in [(600, 300), (0, 0), (135, 315), (1000, 100)]:
+    coin = gtk.Oggetto("./Sprites/Oggetti.png", (0, 0, 12, 12), loc, 
+                   (58, 58), "coin", pv = 15, pl = 0, nFrames = 5)
+    # Aggiungi monete a 'root'
+    root.OBJadd("oggetto", coin, objf.collisionCoins)
 
-# Aggiungi ostacoli
-three = gtk.Oggetto("./Sprites/Alberi.png", (0, 0, 32, 32), (110, 200), 
-                   (120, 150), "three", pv = 120, pl = 40)
-root.OBJadd("ostacolo", three, collinionObstacles)
+# Crea gli alberi
+for loc in [(110, 200), (130, 310), (1020, 115)]:
+    three = gtk.Oggetto("./Sprites/Alberi.png", (0, 0, 32, 32), loc, 
+                       (120, 150), "three", pv = 120, pl = 40)
+    # Aggiungi gli alberi a 'root'
+    root.OBJadd("ostacolo", three, objf.collinionObstacles)
+
+# Crea le rocce
 rock = gtk.Oggetto("./Sprites/Rocce.png", (2, 0, 36, 34), (800, 200), 
                    (130, 115), "rock", pv = 50, pl = 20)
-root.OBJadd("ostacolo", rock, collinionObstacles)
+# Aggiungi le rocce a 'root'
+root.OBJadd("ostacolo", rock, objf.collinionObstacles)
 
 
 '''
-FUNZIONE DI MAINLOOP
+4) FUNZIONE DI MAINLOOP
 '''
 #####--- MAIN LOOP ---#####
 def prova():
     global root
-    # Pulisci la surface
+    # Pulisci la surface di 'root.window'
     root.window.surface = pygame.Surface(root.window.size)
+    # Colora la surface di 'root.window' di verde
     root.window.surface.fill(gtk.GREEN)
     # Aggiorna la finestra
     root.updateWindow()
 
 
 '''
-MAINLOOP
+5) MAINLOOP
 '''
 # Avvia il main loop
 root.MainLoop()

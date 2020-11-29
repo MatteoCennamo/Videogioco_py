@@ -1,21 +1,57 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Nov 18 21:45:18 2020
-
-@author: mattc
-"""
-
 '''
 Questo pacchetto contiene tutte le classi necessarie al gioco.
+
+INDICE:
+    
+    1) IMPORT
+    
+    2) COLORI
+    
+    3) FUNZIONI:
+        -> _Wait
+        -> _Void
+        -> collisionDetection
+        
+    4) CLASSE GameInit:
+        -> __init__
+        -> MainLoop
+        -> ReLoop
+        -> MoveWindow
+        -> OBJadd
+        -> updateWindow
+        -> __str__
+        
+    5) CLASSE Screen:
+        -> __init__
+        -> __str__
+        
+    6) CLASSE Window:
+        -> __init__
+        -> __str__
+        
+    7) CLASSE Personaggio:
+        -> __init__
+        -> __str__
+        
+    8) CLASSE Oggetto:
+        -> __init__
+        -> __str__
+
 '''
 
+'''
+1) IMPORT
+'''
 import pygame
 import sys
+from itertools import chain
+
 
 '''
-COLORI
+2) COLORI
 '''
-# possono essere estratti con il comando: GameToolKit.WHITE
+# Possono essere estratti con il comando: GameToolKit.BLACK...
 setattr(sys.modules[__name__], "BLACK", (0, 0, 0))
 setattr(sys.modules[__name__], "GRAY", (128, 128, 128))
 setattr(sys.modules[__name__], "WHITE", (255, 255, 255))
@@ -34,10 +70,17 @@ setattr(sys.modules[__name__], "GREEN", (128, 255, 0))
 setattr(sys.modules[__name__], "PURPLE", (160, 0, 255))
 setattr(sys.modules[__name__], "SKY_BLUE", (0, 128, 255))
 
+
+'''
+3) FUNZIONI
+'''
 # Main Loop di default
 def _Wait():
+    '''Non fa nulla e non restituisce nessun valore.'''
     pass
-def nulla(root = None, obj = None):
+# Funzione degli OBJ di default
+def _Void(root = None, obj = None):
+    '''Restituisce 'root' e 'obj' senza fare nulla.'''
     return root, obj
 
 # Collision detection
@@ -87,8 +130,9 @@ def collisionDetection(root, collider, collided):
 #    -> "23": collisione dal basso a sinistra
 #    -> "24": collisione dall'alto a sinistra
 
+
 '''
-OGGETTO GAME INIT
+4) CLASSE GAMEINIT
 '''
 # Creo il root che contiene la finestra
 # title    -> titolo della finestra
@@ -96,9 +140,8 @@ OGGETTO GAME INIT
 # pos_wd   -> posizione iniziale della finestra, di default pari a (0, 0)
 # mainloop -> funzione che contiene i comandi da ripetere a ogni ciclo while.
 class GameInit():
-    def __init__(self, title = "Default title", screen_size = (800, 600), 
-                 window_size = (800, 600), pos_wd = 
-                 (0, 0), mainloop = _Wait):
+    def __init__(self, title = "Default title", screen_size = (1000, 700), 
+                 window_size = (1000, 700), pos_wd = (0, 0), mainloop = _Wait):
         pygame.init()
         
         # Crea la schermata
@@ -155,10 +198,11 @@ class GameInit():
         
         # Crea un dizionario di oggetti.
         # vuoto di default:
-        self.obj = {"personaggio": [], "oggetto": [], "ostacolo": []}
+        self.obj = {"personaggio": [], "oggetto": [], "ostacolo": [], 
+                    "volante": []}
         
         ##########--- DEBUG ---##########--- DEBUG ---##########
-#        print(str(self))
+        print(str(self))
     
     # Crea il main loop e lo avvia
     def MainLoop(self):
@@ -289,98 +333,51 @@ class GameInit():
         # Sporta la finestra
         self.MoveWindow((-dx[0], -dy[0]))
         
-        # Collisione con gli oggetti
-#        self.OBJcollision()
+        # Crea una lista di tutti gli oggetti
+        OBJlist = list(chain.from_iterable(self.obj.values()))
         
-        # Collisione con ostacoli
-#        for e in self.obj["ostacolo"]:
-#            out = collisionDetection(self, self.obj["personaggio"][0], e)
-#            if len(out) > 0:   # c'è stata collisione
-#                e.collided = True
-#                done = False
-#                if "1" in out: # collisione da destra
-#                    self.obj["personaggio"][0].x = e.x + e.w - e.pl
-#                    done = True
-#                if "2" in out: # collisione da sinistra
-#                    self.obj["personaggio"][0].x = (e.x - 
-#                            self.obj["personaggio"][0].w + e.pl)
-#                    done = True
-#                if ("3" in out) and (not done): # collisione dal basso
-#                    self.obj["personaggio"][0].y = (e.y + e.h -  
-#                            self.obj["personaggio"][0].pv)
-#                if ("4" in out) and (not done): # collisione dali'alto
-#                    self.obj["personaggio"][0].y = (e.y - 
-#                            self.obj["personaggio"][0].h + e.pv)
-#            else:  # non c'è stata collisione
-#                e.collided = False
+        # Ordina gli oggetti per y+h (in ordine crescente)
+        OBJlist.sort(key = lambda obj: obj.y + obj.h)
         
         # Scansiona gli obj
-        OBJkey = [x for x in self.obj.keys() if x not in ["personaggio"]]
-        for o in OBJkey:
-            for e in self.obj[o]:
-                # Lancia la funzione associata all'obj
-                self, e = e.fun(root = self, obj = e)
-#                print(str(e))
-                # Solo se status = True e che si trovano in alto
-                if e.status and (e.y + e.h < self.obj["personaggio"][0].y + 
-                                 self.obj["personaggio"][0].h):
-                    # Rappresenta gli obj nella window
-                     self.window.surface.blit(e.image, (e.x, e.y))
-                
-        # Rappresenta il personaggio
-        # Lancia la funzione associata all'obj
-        self, self.obj["personaggio"][0] = self.obj["personaggio"][0].fun(
-                root = self, obj = self.obj["personaggio"][0])
-        self.window.surface.blit(self.obj["personaggio"][0].image, (
-                self.obj["personaggio"][0].x, self.obj["personaggio"][0].y))
-        
-        # Rappresnta quello che sta davanti al personaggio
-        for o in OBJkey:
-            for e in self.obj[o]:
-                # Lancia la funzione associata all'obj
-                self, e = e.fun(root = self, obj = e)
-                
-                # Solo se status = True e che si trovano in basso
-                if e.status and (e.y + e.h >= self.obj["personaggio"][0].y + 
-                                 self.obj["personaggio"][0].h):
-                     self.window.surface.blit(e.image, (e.x, e.y))
-        
+        for e in OBJlist:
+            # Lancia la funzione associata all'obj
+            self, e = e.fun(root = self, obj = e)
+            
+            # Solo se status = True e non si trova in 'volante'
+            if e.status and e not in self.obj["volante"]:
+                # Rappresenta gli obj nella window
+                 self.window.surface.blit(e.image, (e.x, e.y))
+        # Scansiona gli obj 'volante'
+        for e in OBJlist:
+            # Solo se status = True e si trova in 'volante'
+            if e.status and e in self.obj["volante"]:
+                # Rappresenta gli obj nella window
+                 self.window.surface.blit(e.image, (e.x, e.y))
+
         # Rappresenta la finestra nella nuova posizione
         self.screen.set_mode.blit(self.window.surface, self.window.pos)
-    
-    # Collisione con gli oggetti
-    def OBJcollision(self):
-        x = self.obj["personaggio"][0].x
-        y = self.obj["personaggio"][0].y
-        w = self.obj["personaggio"][0].w
-        h = self.obj["personaggio"][0].h
-        pl = self.obj["personaggio"][0].pl
-        pv = self.obj["personaggio"][0].pv
-        
-        # Verifica la collisione
-        for e in self.obj["oggetto"]: # Scansiona tutti gli oggetti
-            if e.status:              # Considera solo quelli con status = True
-                if x + w - pl >= e.x and x <= e.x + e.w - pl:
-                    if y + h - e.pv >= e.y and y <= e.y + e.h - pv:
-                        e.status = False
     
     # Cosa restituisce quando usi la funzione 'str'
     def __str__(self):
         a = ["<class 'GameToolKit.GameInit object'>:\r\n\r\n" + 
              ".screen   -> {}".format(str(self.screen)) + 
              ".window   -> {}".format(str(self.window)) + 
-             "    .pos     -> list of 2: posx = {}; posy = {}\r\n".format(
-                     self.window.pos[0], self.window.pos[1])]
-        b = [".clock    -> pygame.time.Clock\r\n" + 
+             ".clock    -> pygame.time.Clock\r\n" + 
              ".dt       -> time frame: {}\r\n".format(str(self.dt)) + 
              ".run      -> logical: {}\r\n".format(self.run) + 
              "._reloop  -> logical: {}\r\n".format(self._reloop) + 
              ".mainloop -> function\r\n" + 
-             ".obj      -> dictionary of {}\r\n".format(len(self.obj))]
-        return a[0] + b[0]
+             ".obj      -> dictionary of {}:\r\n".format(len(self.obj)) + 
+             "    [personaggio] -> list of {}\r\n".format(len(self.obj["personaggio"])) + 
+             "    [oggetto]     -> list of {}\r\n".format(len(self.obj["oggetto"])) + 
+             "    [ostacolo]    -> list of {}\r\n".format(len(self.obj["ostacolo"])) + 
+             "    [volante]     -> list of {}\r\n".format(len(self.obj["volante"]))]
+        return a[0]
+
 
 '''
-OGGETTO SCREEN
+5) CLASSE SCREEN
 '''
 class Screen():
     def __init__(self, title, size):
@@ -393,13 +390,15 @@ class Screen():
     def __str__(self):
         a = ["<class 'GameToolKit.Screen'>:\r\n" + 
              "    .set_mode -> pygame.display.set_mode\r\n" + 
-             "    .size     -> list of 2: width = {}; height = {}\r\n".format(
-                     self.size[0], self.size[1]) + 
-                     "    .title    -> pygame.display.set_caption\r\n"]
+             "    .title    -> pygame.display.set_caption\r\n" + 
+             "    .size     -> list of 2:\r\n" + 
+             "        [0] width  -> {}\r\n".format(self.size[0]) + 
+             "        [1] height -> {}\r\n".format(self.size[1])]
         return a[0]
 
+
 '''
-OGGETTO WINDOW
+6) CLASSE WINDOW
 '''
 class Window():
     def __init__(self, size, pos):
@@ -411,12 +410,17 @@ class Window():
     def __str__(self):
         a = ["<class 'GameToolKit.Window'>:\r\n" + 
              "    .surface -> pygame.Surface\r\n" + 
-             "    .size    -> list of 2: width = {}; height = {}\r\n".format(
-                     self.size[0], self.size[1])]
+             "    .size    -> list of 2:\r\n" + 
+             "        [0] width  -> {}\r\n".format(self.size[0]) + 
+             "        [1] height -> {}\r\n".format(self.size[1]) + 
+             "    .pos     -> list of 2:\r\n" + 
+             "        [0] posx -> {}\r\n".format(self.pos[0]) + 
+             "        [1] posy -> {}\r\n".format(self.pos[1])]
         return a[0]
 
+
 '''
-OBJ -> PERSONAGGIO
+7) CLASSE PERSONAGGIO
 '''
 class Personaggio():
     def __init__(self, path, ritaglio, pos, size, speed, pl = 20, 
@@ -425,8 +429,9 @@ class Personaggio():
         self.status = True        # True = rappresenta in window
         self.path = path          # path della sprite
         self.chrono = 0           # conta il numero di loop trascorsi
-        self.fun = lambda: nulla()# funzione associata al personaggio
-        self.ritaglio = ritaglio  # (x, y, w, h) del ritaglio di 'image'
+        self.fun = lambda: _Void()# funzione associata al personaggio
+        self.ritaglio = list(ritaglio)  # (x, y, w, h) del ritaglio di 'image'
+                                        # solo dell'immagine in alto a sinistra.
         self.pl = pl              # penetrabilità laterale (in pixel)
         self.pv = pv              # penetrabilità verticale (in pixel)
         self.w = size[0]          # larghezza
@@ -439,31 +444,57 @@ class Personaggio():
         self.yspeed = speed[1]    # velocità lungo y
         
         # Crea l'immagine che viene rappresentata nalla window
-        self.image = pygame.image.load(path)
+        imageAll = pygame.image.load(path)
         
-        #Ritaglia l'immagine
-        self.image = self.image.subsurface(ritaglio)
+        # Inizializza image_list
+        self.image_dict = {"down": [], "left": [], "right": [], "up": []}
         
+        row = 0
+        # Ritaglia l'immagine
+        for i in self.image_dict.keys():
+            col_list = []
+            for col in range(3):
+                w = self.ritaglio[2]
+                x = self.ritaglio[0] + w * col
+                h = self.ritaglio[3]
+                y = self.ritaglio[1] + h * row
+                new_image = imageAll.subsurface(x, y, w, h)
+                new_image = pygame.transform.scale(new_image, size)
+                col_list.append(new_image)
+            new_image = imageAll.subsurface(x - w, y, w, h)
+            new_image = pygame.transform.scale(new_image, size)
+            col_list.append(new_image)
+            self.image_dict[i] = col_list # aggiorna il dizionario con la nuova riga
+            row += 1 # passa alla prossima riga
+        
+        # Prendi l'immagine di default
+        self.image = self.image_dict["down"][1]  # frontale
         # Ridimensiona l'immagine
-        self.image = pygame.transform.scale(self.image, size)
+        # self.image = pygame.transform.scale(self.image, size)
+        self.OLDdirection = "down"
     
     def __str__(self):
         a = ["<class 'GameToolKit.Personaggio'>:\r\n\r\n" + 
-             ".status   -> logical: {}\r\n".format(self.status) + 
-             ".image    -> pygame.Surface\r\n" +
-             '.path     -> {}: "{}"\r\n'.format(type(self.path), self.path) + 
-             ".chrono   -> {}: {}\r\n".format(type(self.chrono), self.chrono) + 
-             ".fun      -> funzione\r\n" + 
-             ".ritaglio -> list of 4:\r\n" + 
+             ".status     -> logical: {}\r\n".format(self.status) + 
+             ".chrono     -> {}: {}\r\n".format(type(self.chrono), self.chrono) + 
+             ".fun        -> funzione\r\n" + 
+             ".image      -> pygame.Surface\r\n" + 
+             ".image_dict -> dictionary of 4:\r\n" + 
+             "    [down]  -> list of 3 pygame.Surface\r\n" + 
+             "    [left]  -> list of 3 pygame.Surface\r\n" + 
+             "    [right] -> list of 3 pygame.Surface\r\n" + 
+             "    [up]    -> list of 3 pygame.Surface\r\n" + 
+             '.path       -> {}: "{}"\r\n'.format(type(self.path), self.path) + 
+             ".ritaglio   -> list of 4:\r\n" + 
              "    [0] x -> {}\r\n".format(self.ritaglio[0]) + 
              "    [1] y -> {}\r\n".format(self.ritaglio[1]) + 
              "    [2] w -> {}\r\n".format(self.ritaglio[2]) + 
              "    [3] h -> {}\r\n".format(self.ritaglio[3]) + 
-             ".x        -> {}: {}\r\n".format(type(self.x), str(self.x)) + 
-             ".y        -> {}: {}\r\n".format(type(self.y), str(self.y)) + 
-             ".w        -> {}: {}\r\n".format(type(self.w), str(self.w)) + 
-             ".h        -> {}: {}\r\n".format(type(self.h), str(self.h)) + 
-             ".xchange  -> {}: {}\r\n".format(type(self.xchange), 
+             ".x          -> {}: {}\r\n".format(type(self.x), str(self.x)) + 
+             ".y          -> {}: {}\r\n".format(type(self.y), str(self.y)) + 
+             ".w          -> {}: {}\r\n".format(type(self.w), str(self.w)) + 
+             ".h          -> {}: {}\r\n".format(type(self.h), str(self.h)) + 
+             ".xchange    -> {}: {}\r\n".format(type(self.xchange), 
                            str(self.xchange)) + 
                            ".ychange  -> {}: {}\r\n".format(type(self.ychange), 
                                          str(self.ychange))]
@@ -475,17 +506,18 @@ class Personaggio():
              ".pv       -> {}: {}\r\n".format(type(self.pv), str(self.pv))]
         return a[0] + b[0]
 
+
 '''
-OBJ -> OGGETTO
+8) CLASSE OGGETTO
 '''
 class Oggetto():
     def __init__(self, path, ritaglio, pos, size, tipo, pl = 0, 
-                 pv = 0):
+                 pv = 0, nFrames = 1):
         # Inizializza tutti gli attributi dell'oggetto 'Oggetto'
         self.status = True        # True = rappresenta in window
         self.collided = False     # True = l'oggetto è stato colpito
         self.path = path          # path della sprite
-        self.fun = lambda: nulla()# funzione associata all'oggetto
+        self.fun = lambda: _Void()# funzione associata all'oggetto
         self.chrono = 0           # conta il numero di loop trascorsi
         self.type = tipo          # tipo di oggetto (es. coin, arma, ...)
         self.ritaglio = ritaglio  # (x, y, w, h) del ritaglio di 'image'
@@ -495,34 +527,56 @@ class Oggetto():
         self.h = size[1]          # altezza
         self.x = pos[0]           # posizione x in window
         self.y = pos[1]           # posizione y in window
+        self.image_list = []      # contiene la lista dei frame dell'oggetto
         
         # Crea l'immagine che viene rappresentata nalla window
-        self.image = pygame.image.load(path)
+        self.image = self.cutImage(nFrames)  # contiene l'immagine rappresentata
+                                             # in window.
+        print(str(self))
+    
+    # Ritaglia le immagini per l'animazione di oggetti.
+    # Crea una lista di immagini.
+    def cutImage(self, nFrames):
+        # Crea l'immagine che viene rappresentata nalla window
+        imageAll = pygame.image.load(self.path)
         
-        #Ritaglia l'immagine
-        self.image = self.image.subsurface(ritaglio)
+        # Inizializza image_list
+        self.image_list = []
         
-        # Ridimensiona l'immagine
-        self.image = pygame.transform.scale(self.image, size)
+        for col in range(nFrames):
+            w = self.ritaglio[2]
+            x = self.ritaglio[0] + w * col
+            h = self.ritaglio[3]
+            y = self.ritaglio[1]
+            # ritaglia l'immagine
+            new_image = imageAll.subsurface(x, y, w, h)
+            # ridimrnsiona l'immagine
+            new_image = pygame.transform.scale(new_image, (self.w, self.h))
+            # aggiorna la lista con la nuova immagine
+            self.image_list.append(new_image)
+        
+        # Prendi l'immagine di default
+        return self.image_list[0]  # la prima
     
     def __str__(self):
         a = ["<class 'GameToolKit.Oggetto'>:\r\n\r\n" + 
-             ".status   -> logical: {}\r\n".format(self.status) + 
-             ".collided -> logical: {}\r\n".format(self.collided) + 
-             '.type     -> "{}"\r\n'.format(self.type) + 
-             ".image    -> pygame.Surface\r\n" +
-             '.path     -> {}: "{}"\r\n'.format(type(self.path), self.path) + 
-             ".chrono   -> {}: {}\r\n".format(type(self.chrono), self.chrono) + 
-             ".fun      -> funzione: {}\r\n".format(str(self.fun)) + 
-             ".ritaglio -> list of 4:\r\n" + 
+             ".status     -> logical: {}\r\n".format(self.status) + 
+             ".collided   -> logical: {}\r\n".format(self.collided) + 
+             '.type       -> "{}"\r\n'.format(self.type) + 
+             ".chrono     -> {}: {}\r\n".format(type(self.chrono), self.chrono) + 
+             ".fun        -> funzione: {}\r\n".format(str(self.fun)) + 
+             ".image      -> pygame.Surface\r\n" + 
+             ".image_list -> list of {} pygame.Surface\r\n".format(len(self.image_list)) + 
+             '.path       -> {}: "{}"\r\n'.format(type(self.path), self.path) + 
+             ".ritaglio   -> list of 4:\r\n" + 
              "    [0] x -> {}\r\n".format(self.ritaglio[0]) + 
              "    [1] y -> {}\r\n".format(self.ritaglio[1]) + 
              "    [2] w -> {}\r\n".format(self.ritaglio[2]) + 
              "    [3] h -> {}\r\n".format(self.ritaglio[3]) + 
-             ".x        -> {}: {}\r\n".format(type(self.x), str(self.x)) + 
-             ".y        -> {}: {}\r\n".format(type(self.y), str(self.y)) + 
-             ".w        -> {}: {}\r\n".format(type(self.w), str(self.w)) + 
-             ".h        -> {}: {}\r\n".format(type(self.h), str(self.h)) + 
-             ".pl       -> {}: {}\r\n".format(type(self.pl), str(self.pl)) + 
-             ".pv       -> {}: {}\r\n".format(type(self.pv), str(self.pv))]
+             ".x          -> {}: {}\r\n".format(type(self.x), str(self.x)) + 
+             ".y          -> {}: {}\r\n".format(type(self.y), str(self.y)) + 
+             ".w          -> {}: {}\r\n".format(type(self.w), str(self.w)) + 
+             ".h          -> {}: {}\r\n".format(type(self.h), str(self.h)) + 
+             ".pl         -> {}: {}\r\n".format(type(self.pl), str(self.pl)) + 
+             ".pv         -> {}: {}\r\n".format(type(self.pv), str(self.pv))]
         return a[0]
