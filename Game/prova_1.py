@@ -48,7 +48,7 @@ for loc in [(600, 300), (0, 0), (135, 315), (1000, 100)]:
 # Crea gli alberi
 for loc in [(110, 200), (130, 310), (1020, 115)]:
     three = gtk.Oggetto("./Sprites/Alberi.png", (0, 0, 32, 32), loc, 
-                       (120, 150), "three", pv = 120, pl = 40)
+                       (120, 150), "three", pv = 110, pl = 40)
     # Aggiungi gli alberi a 'root'
     root.OBJadd("ostacolo", three, objf.collinionObstacles)
 

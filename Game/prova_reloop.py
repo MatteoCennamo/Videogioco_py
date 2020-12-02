@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Nov 18 21:59:20 2020
-
-@author: mattc
+Prova di utilizzo del 'ReLoop'.
 """
 
 '''
@@ -10,6 +8,7 @@ IMPORT
 '''
 # Importa i pacchetti
 import GameToolKit as gtk
+import OBJfunctions as objf  # Funzioni degli OBJ
 import pygame
 
 
@@ -28,10 +27,10 @@ root = gtk.GameInit(title = "ARANCIONE", screen_size = (1000, 500),
 AGGIUNGI OGGETTI
 '''
 # Crea oggetto personaggio
-player = gtk.Personaggio("./Sprites/SpriteWarrior.png", (410, 400, 390, 350), 
-                         (0, 0), (100, 100), (0.2, 0.2))
+player = gtk.Personaggio("./Sprites/Personaggi_16x16.png", (48, 0, 16, 16), 
+                         (350, 350), (75, 75), (0.2, 0.2), pl = 15, pv = 50)
 # Aggiungi il personaggio a root
-root.OBJadd("personaggio", player)
+root.OBJadd("personaggio", player, objf.playerAnimation)
 
 '''
 FUNZIONI DI MAINLOOP
@@ -40,15 +39,13 @@ FUNZIONI DI MAINLOOP
 def prova():
     global root, ite
     ite += 1
-    dt = root.clock.tick(60)
     # Pulisci la surface
     root.window.surface = pygame.Surface(root.window.size)
     # Crea rettangolo arancione
     pygame.draw.rect(root.window.surface, gtk.ORANGE, 
                      (100, 100, 20, 20))
     
-    # Muovi la finestra
-    root.MoveWindow((-0.02*dt, -0.02*dt))
+    # Aggiorna la finestra
     root.updateWindow()
     
     # Rimpristina nuovo main loop
@@ -64,15 +61,12 @@ def prova():
 def prova_reloop():
     global root, ite
     ite += 1
-    dt = root.clock.tick(60)
     # Pulisci la surface
     root.window.surface = pygame.Surface(root.window.size)
     # Crea rettangolo giallo
     pygame.draw.rect(root.window.surface, gtk.YELLOW, 
                      (100, 100, 20, 20))
-    # root.screen.set_mode.blit(root.window.surface, root.window.pos)
-    # Muovi la finestra
-    root.MoveWindow((0.02*dt, 0.02*dt))
+    # Aggiorna la finestra
     root.updateWindow()
     
     # Rimpristina nuovo main loop

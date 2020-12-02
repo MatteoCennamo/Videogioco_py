@@ -68,6 +68,8 @@ def collisionCoins(root = None, obj = None):
         if x + w - pl >= obj.x and x <= obj.x + obj.w - pl:
             if y + h - obj.pv >= obj.y and y <= obj.y + obj.h - pv:
                 obj.collided = True
+                # Aggiungi uno alle monete raccolte
+                root.obj["personaggio"][0].coins += 1
                 # Resetta il cronometro per l'animazione 'collisionAnimationObj'
                 obj.chrono = 0
         
