@@ -32,6 +32,8 @@ INDICE:
     
     7) CLASSE StatusBar:
         -> __init__
+        -> updateBar
+        -> set_font
         -> __str__
         
     8) CLASSE Personaggio:
@@ -40,6 +42,14 @@ INDICE:
         
     9) CLASSE Oggetto:
         -> __init__
+        -> cutImage
+        -> __str__
+    
+    10) CLASSE GameString:
+        -> __init__
+        -> set_font
+        -> clearAndRender
+        -> showOnMaster
         -> __str__
 
 '''
@@ -47,10 +57,10 @@ INDICE:
 '''
 1) IMPORT
 '''
-import pygame
-import pygame.freetype
-import sys
-from itertools import chain
+import pygame                # Pacchetto standard per videogame in Python
+import pygame.freetype       # Per il font delle scritte
+import sys                   # Per lavorare con i moduli e pacchetti
+from itertools import chain  # Per calcoli iterativi su dizionari e liste
 
 
 '''
@@ -90,6 +100,18 @@ def _Void(root = None, obj = None):
 
 # Collision detection
 def collisionDetection(root, collider, collided):
+    '''Stabilisce se 'collider' ha colliso con 'collided'. 'root' deve essere
+    un oggetto 'GameInit', 'collider e 'collided' devono essere oggetti 'Presonaggio'
+    o 'Oggetto'. Casi possibili di 'out':
+        -> "":   non c'è stata collisione
+        -> "1":  collisione da destra
+        -> "2":  collisione da sinistra
+        -> "3":  collisione dal basso
+        -> "4":  collisione dall'alto
+        -> "13": collisione dal basso a destra
+        -> "14": collisione dall'alto a destra
+        -> "23": collisione dal basso a sinistra
+        -> "24": collisione dall'alto a sinistra'''
     xr = collider.x   # posizione in x del collider
     xd = collided.x   # posizione in x del collided
     yr = collider.y   # posizione in y del collider
@@ -124,16 +146,6 @@ def collisionDetection(root, collider, collided):
         if collider.ychange > 0: # il personaggio viene da sopra
             out = out + "4"      # caso 4
     return out
-# casi possibili di 'out':
-#    -> "":   non c'è stata collisione
-#    -> "1":  collisione da destra
-#    -> "2":  collisione da sinistra
-#    -> "3":  collisione dal basso
-#    -> "4":  collisione dall'alto
-#    -> "13": collisione dal basso a destra
-#    -> "14": collisione dall'alto a destra
-#    -> "23": collisione dal basso a sinistra
-#    -> "24": collisione dall'alto a sinistra
 
 
 '''
@@ -145,6 +157,7 @@ def collisionDetection(root, collider, collided):
 # pos_wd   -> posizione iniziale della finestra, di default pari a (0, 0)
 # mainloop -> funzione che contiene i comandi da ripetere a ogni ciclo while.
 class GameInit():
+    '''Inizializza il gioco.'''
     def __init__(self, title = "Default title", screen_size = (1000, 700), 
                  window_size = (1000, 700), pos_wd = (0, 0), mainloop = _Wait):
         # Inizializza 'pygame'
@@ -216,6 +229,9 @@ class GameInit():
     
     # Crea il main loop e lo avvia
     def MainLoop(self):
+        '''Crea il main loop del gioco e avvia la funzione associata all'attributo
+        '.mainloop' dell'oggetto 'GameInit'. Stabilisce i rapporti con la 
+        tastiera.'''
         while self._reloop == True:
             # Cambia il valore di _reloop in 'False' -> di default non 
             # ricomincia nuovi loop quando esce dal main loop.
@@ -290,6 +306,7 @@ class GameInit():
     
     # Avvia un nuovo main loop
     def ReLoop(self, mainloop = _Wait):
+        '''Esce dal main loop e rientra con un nuovo 'GameInit.mainloop'.'''
         # Esce dal main loop
         self.run = False
         
@@ -301,6 +318,8 @@ class GameInit():
     
     # Muovi finestra
     def MoveWindow(self, delta_pos):
+        '''Modifica la posizione relativa dell'oggetto 'Window' rispetto 
+        all'oggetto 'Screen' (che sta fisso).'''
         # 'delta_pos' -> tupla che contiene lo spostamento in x e y
         
         # Pulisci lo schermo (necessario solo se le dimensioni della 
@@ -324,6 +343,11 @@ class GameInit():
     
     # Aggiorna la finestra
     def updateWindow(self):
+        '''Sposta la finestra 'Window' a seconda della posizione dell'oggetto 
+        'Personaggio'. Rappresenta gli oggetti che hanno l'attributo '.status' = 
+        True nella '.surface' di 'Window'. Rappresenta la barra di stato
+        'GameInit.status_bar'. Renderizza 'Window.surface' in 
+        'GameInit.screen.set_mode.'''
         # Sposta la finestra insieme al personaggio
         dx = [self.obj["personaggio"][0].x - self.screen.size[0] / 2 + 
               self.window.pos[0] + self.obj["personaggio"][0].w / 2]
@@ -362,8 +386,10 @@ class GameInit():
     
     # Aggiung oggetti a .obj
     def OBJadd(self, objType, obj, fun):
-        # objType -> stringa che contiene il tipo di object
-        # obj     -> l'oggetto da inserire
+        '''Aggiunge un oggetto al dizionario 'GameInit.obj'. 'objType' è la 
+        chiave del dizionario, 'obj' è il valore corrispondente che si vuole 
+        aggiungere (deve essere di tipo 'Oggetto' o 'Personaggio'). 'fun' è 
+        la funzione che si vuole associare all'oggetto.'''
         
         # Aggiungi funzione all'oggetto
         obj.fun = fun
@@ -372,15 +398,16 @@ class GameInit():
     
     # Cosa restituisce quando usi la funzione 'str'
     def __str__(self):
-        a = ["<class 'GameToolKit.GameInit object'>:\r\n\r\n" + 
-             ".screen   -> {}".format(str(self.screen)) + 
-             ".window   -> {}".format(str(self.window)) + 
-             ".clock    -> pygame.time.Clock\r\n" + 
-             ".dt       -> time frame: {}\r\n".format(str(self.dt)) + 
-             ".run      -> logical: {}\r\n".format(self.run) + 
-             "._reloop  -> logical: {}\r\n".format(self._reloop) + 
-             ".mainloop -> function\r\n" + 
-             ".obj      -> dictionary of {}:\r\n".format(len(self.obj)) + 
+        a = ["<class 'GameToolKit.GameInit'>:\r\n\r\n" + 
+             ".screen     -> {}".format(str(self.screen)) + 
+             ".window     -> {}".format(str(self.window)) + 
+             ".status_bar -> {}".format(str(self.status_bar)) + 
+             ".clock      -> pygame.time.Clock\r\n" + 
+             ".dt         -> time frame: {}\r\n".format(str(self.dt)) + 
+             ".run        -> logical: {}\r\n".format(self.run) + 
+             "._reloop    -> logical: {}\r\n".format(self._reloop) + 
+             ".mainloop   -> function\r\n" + 
+             ".obj        -> dictionary of {}:\r\n".format(len(self.obj)) + 
              "    [personaggio] -> list of {}\r\n".format(len(self.obj["personaggio"])) + 
              "    [oggetto]     -> list of {}\r\n".format(len(self.obj["oggetto"])) + 
              "    [ostacolo]    -> list of {}\r\n".format(len(self.obj["ostacolo"])) + 
@@ -392,6 +419,8 @@ class GameInit():
 5) CLASSE SCREEN
 '''
 class Screen():
+    '''Crea l'oggetto 'Screen' che contiene il titolo della finestra di gioco 
+    e la surface principale dove renderizzare 'Window' ('.set_mode').'''
     def __init__(self, title, size):
         self.set_mode = pygame.display.set_mode(size)
         self.set_mode.fill(sys.modules[__name__].GRAY)
@@ -413,6 +442,8 @@ class Screen():
 6) CLASSE WINDOW
 '''
 class Window():
+    '''In 'Window.surface' verranno incollati tutti gli oggetti prima di essere
+    renderizzati in 'GameInit.updateWindow()'.'''
     def __init__(self, size, pos):
         self.surface = pygame.Surface(size)
         self.size = list(size)
@@ -437,7 +468,10 @@ class Window():
 class StatusBar():
     def __init__(self, pos, size):
         '''Window deve essere un oggetto 'Window'. .size[0] dipende dalla 
-        dimensione dello schermo 'root.screen.size[0]'.'''
+        dimensione dello schermo 'root.screen.size[0]'. 'BarStatus' viene 
+        rappresentato in 'Window.surface' dalla funzione 'GameInit.updateWindow', 
+        che richiama 'BarStatus.updateBar'. La barra di stato viene rappresentata
+        in alto.'''
         # Posizione della barra di stato in 'Window':
         self.pos = list(pos)  # posizione nella window [X, Y]
         self.size = list(size)
@@ -469,23 +503,26 @@ class StatusBar():
     
     def set_font(self, fontname = 'Comic Sans MS', size = 16, 
                  color = (255, 255, 255)):
+        '''Modifica il font della scritta dell'oggetto 'BarStatus'. Imposta:
+            -> Barstatus.font (font della scritta)
+            -> Barstatus.textcolor (colore della scritta)'''
         self.font = pygame.freetype.SysFont(fontname, size)
         self.textcolor = color
     
     def __str__(self):
          a = ["<class 'GameToolKit.StatusBar'>:\r\n" + 
-             ".surface   -> pygame.Surface\r\n" + 
-             ".size      -> list of 2:\r\n" + 
-             "    [0] width  -> {}\r\n".format(self.size[0]) + 
-             "    [1] height -> {}\r\n".format(self.size[1]) + 
-             ".pos       -> list of 2:\r\n" + 
-             "    [0] posx -> {}\r\n".format(self.pos[0]) + 
-             "    [1] posy -> {}\r\n".format(self.pos[1]) + 
-             ".string    -> {}\r\n".format(self.string) + 
-             ".textpos   -> {}\r\n".format(self.textpos) + 
-             ".font      -> {}\r\n".format(type(self.font)) + 
-             ".textcolor -> {}\r\n".format(self.textcolor) + 
-             ".bg        -> {}\r\n".format(self.bg)]
+             "    .surface   -> pygame.Surface\r\n" + 
+             "    .size      -> list of 2:\r\n" + 
+             "        [0] width  -> {}\r\n".format(self.size[0]) + 
+             "        [1] height -> {}\r\n".format(self.size[1]) + 
+             "    .pos       -> list of 2:\r\n" + 
+             "        [0] posx -> {}\r\n".format(self.pos[0]) + 
+             "        [1] posy -> {}\r\n".format(self.pos[1]) + 
+             "    .string    -> {}\r\n".format(self.string) + 
+             "    .textpos   -> {}\r\n".format(self.textpos) + 
+             "    .font      -> {}\r\n".format(type(self.font)) + 
+             "    .textcolor -> {}\r\n".format(self.textcolor) + 
+             "    .bg        -> {}\r\n".format(self.bg)]
          return a[0]
 
 
@@ -493,6 +530,9 @@ class StatusBar():
 8) CLASSE PERSONAGGIO
 '''
 class Personaggio():
+    '''Questa è la classe per il Personaggio giocabile. Viene aggiunto a 
+    'GameInit' con la funzione 'GameInit.OBJadd()'. Il personaggio viene 
+    rappresentato sullo schermo se '.status' = True (opzione di default).'''
     def __init__(self, path, ritaglio, pos, size, speed, pl = 20, 
                  pv = 40):
         # Inizializza tutti gli attributi dell'oggetto 'Personaggio'
@@ -582,6 +622,9 @@ class Personaggio():
 9) CLASSE OGGETTO
 '''
 class Oggetto():
+    '''Crea un Oggetto che può essere aggiunto all'oggetto 'GameInit' con 
+    'GameInit.OBJadd()'. L'oggetto sarà rappresentato nello schermo se avrà 
+    l'attributo '.status' = True (opzione di default).'''
     def __init__(self, path, ritaglio, pos, size, tipo, pl = 0, 
                  pv = 0, nFrames = 1):
         # Inizializza tutti gli attributi dell'oggetto 'Oggetto'
@@ -607,6 +650,8 @@ class Oggetto():
     # Ritaglia le immagini per l'animazione di oggetti.
     # Crea una lista di immagini.
     def cutImage(self, nFrames):
+        '''Ritaglia le immagini per l'animazione di oggetti. Crea una lista di 
+        immagini che andranno a comporre l'attributo '.image_list'.'''
         # Crea l'immagine che viene rappresentata nalla window
         imageAll = pygame.image.load(self.path)
         
@@ -652,13 +697,64 @@ class Oggetto():
         return a[0]
 
 
-#'''
-#10) CLASSE GAMESTRING
-#'''
-#class GameString():
-#    def __init__(self, surface, string, pos = [0, 0]):
-#        self.string = string
-#        self.surface = surface
-#        self.pos = pos
-#        txt = pygame.font.render(string)
-#        self.text = txt.get_rect()
+'''
+10) CLASSE GAMESTRING
+'''
+class GameString():
+    '''Crea un oggetto 'testo' facile da modificare e renderizzare. Bisogna 
+    passare un 'master' che è la pygame.Surface dove verrà creato il testo; 
+    la 'stringa' che contiene il testo da proiettare; 'size' che è la grandezza 
+    della casella di testo che si intende creare [X, Y].'''
+    def __init__(self, master, string, size, pos = [0, 0], bg = (128, 128, 128), 
+                 textcolor = (255, 255, 255), fontname = 'Comic Sans MS', 
+                 fontsize = 16, rotation = 0):
+        self.string = string    # contiene il testo
+        self.master = master    # pygame.Surface dove verrà rappresentato il testo
+        self.pos = list(pos)    # posizione in '.master' del testo
+        self._surface = pygame.Surface(self.size) # Surface dove viene creato il testo
+        self._size = list(size)  # dimensioni della '._surface'
+        self.bg = list(bg)       # colore di background
+        self.rotation = rotation # rotazione della scritta
+        self.textcolor = list(textcolor)  # colore del testo
+        self.set_font(fontname = 'Comic Sans MS', fontsize = 16, 
+                      color = self.textcolor)
+    
+    def set_font(self, fontname = 'Comic Sans MS', fontsize = 16, 
+                 color = (255, 255, 255)):
+        '''Modifica il font della scritta dell'oggetto 'GameString'. Imposta:
+            -> GameString._font (font della scritta)
+            -> GameString.textcolor (colore della scritta)'''
+        self._font = pygame.freetype.SysFont(fontname, fontsize)
+        self.textcolor = color
+    
+    def clearAndRender(self):
+        '''Pulisce la surface '._surface' e renderizza la scritta nella 
+        Surface '._surface'.'''
+        # Pulisci la surface
+        self._surface = pygame.Surface(self._size)
+        self._surface.fill(self.bg)
+        
+        # Renderizza il font in '._surface'
+        self._font.render_to(self._surface, self.pos, self.string, 
+                            self.textcolor, rotation = self.rotation)
+    def showOnMaster(self):
+        '''Rappresenta la Surface '._surface' in '.master'.'''
+        # Rappresenta la barra nella finestra
+        self.master.blit(self.surface, self.pos)
+    
+    def __str__(self):
+        a = ["<class 'GameInit.GameString'>:\r\n" + 
+             "    .master    -> pygame.Surface\r\n" + 
+             "    .string    -> {}\r\n".format(self.string) + 
+             "    .pos       -> list of 2:\r\n" + 
+             "        [0] x -> {}\r\n".format(self.pos[0]) + 
+             "        [0] y -> {}\r\n".format(self.pos[1]) + 
+             "    .bg        -> {}\r\n".format(self.bg) + 
+             "    .textcolor -> {}\r\n".format(self.textcolor) + 
+             "    .rotation  -> {}\r\n".format(self.rotation) + 
+             "    ._surface  -> pygame.Surface\r\n" + 
+             "    ._size     -> list of 2:\r\n" + 
+             "        [0] x -> {}\r\n".format(self._size[0]) + 
+             "        [0] y -> {}\r\n".format(self._size[1]) + 
+             "    ._font     -> {}\r\n".format(type(self._font))]
+        return a[0]
