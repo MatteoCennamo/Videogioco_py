@@ -33,7 +33,6 @@ INDICE:
     7) CLASSE StatusBar:
         -> __init__
         -> updateBar
-        -> set_font
         -> __str__
         
     8) CLASSE Personaggio:
@@ -48,8 +47,8 @@ INDICE:
     10) CLASSE GameString:
         -> __init__
         -> set_font
-        -> clearAndRender
-        -> showOnMaster
+        -> render
+        -> move
         -> __str__
 
 '''
@@ -467,7 +466,7 @@ class Window():
 '''
 class StatusBar():
     def __init__(self, pos, size):
-        '''Window deve essere un oggetto 'Window'. .size[0] dipende dalla 
+        '''Root deve essere un oggetto 'GameInit'. .size[0] dipende dalla 
         dimensione dello schermo 'root.screen.size[0]'. 'BarStatus' viene 
         rappresentato in 'Window.surface' dalla funzione 'GameInit.updateWindow', 
         che richiama 'BarStatus.updateBar'. La barra di stato viene rappresentata
@@ -477,11 +476,8 @@ class StatusBar():
         self.size = list(size)
         self.surface = pygame.Surface(size)
         self.string = "Monete: {}"  # cosa viene scritto nella barra
-        self.set_font()             # colore, font e grandezza del testo
-                                    # -> .font
-                                    # -> .textcolor
-        self.bg = (128, 128, 128)   # colore di background (GRIGIO)
-        self.textpos = (20, 5)  # Posizione del testo nella barra
+        self.bg = (0, 0, 0)   # colore di background (NERO)
+        self.text = GameString(self.string, pos = [20, 5], bg = self.bg)
     
     def updateBar(self, root):
         '''Prende come argomento un oggetto 'GameInit' e rappresenta la 
@@ -494,35 +490,24 @@ class StatusBar():
         self.pos = [-root.window.pos[0], -root.window.pos[1]]
         
         # Reimposta il valore della stringa con il numero di monete prese
-        self.font.render_to(self.surface, self.textpos, 
-                            self.string.format(root.obj["personaggio"][0].coins), 
-                            self.textcolor)
+        self.text.string = self.string.format(root.obj["personaggio"][0].coins)
+        self.text.render(self.surface)  # renderizza la scritta
         
         # Rappresenta la barra nella finestra
         root.window.surface.blit(self.surface, self.pos)
     
-    def set_font(self, fontname = 'Comic Sans MS', size = 16, 
-                 color = (255, 255, 255)):
-        '''Modifica il font della scritta dell'oggetto 'BarStatus'. Imposta:
-            -> Barstatus.font (font della scritta)
-            -> Barstatus.textcolor (colore della scritta)'''
-        self.font = pygame.freetype.SysFont(fontname, size)
-        self.textcolor = color
-    
     def __str__(self):
          a = ["<class 'GameToolKit.StatusBar'>:\r\n" + 
-             "    .surface   -> pygame.Surface\r\n" + 
-             "    .size      -> list of 2:\r\n" + 
+             "    .surface -> pygame.Surface\r\n" + 
+             "    .size    -> list of 2:\r\n" + 
              "        [0] width  -> {}\r\n".format(self.size[0]) + 
              "        [1] height -> {}\r\n".format(self.size[1]) + 
-             "    .pos       -> list of 2:\r\n" + 
+             "    .pos     -> list of 2:\r\n" + 
              "        [0] posx -> {}\r\n".format(self.pos[0]) + 
              "        [1] posy -> {}\r\n".format(self.pos[1]) + 
-             "    .string    -> {}\r\n".format(self.string) + 
-             "    .textpos   -> {}\r\n".format(self.textpos) + 
-             "    .font      -> {}\r\n".format(type(self.font)) + 
-             "    .textcolor -> {}\r\n".format(self.textcolor) + 
-             "    .bg        -> {}\r\n".format(self.bg)]
+             "    .text    -> {}\r\n".format(str(self.text)) + 
+             "    .string  -> {}\r\n".format(self.string) + 
+             "    .bg      -> {}\r\n".format(self.bg)]
          return a[0]
 
 
@@ -702,17 +687,12 @@ class Oggetto():
 '''
 class GameString():
     '''Crea un oggetto 'testo' facile da modificare e renderizzare. Bisogna 
-    passare un 'master' che è la pygame.Surface dove verrà creato il testo; 
-    la 'stringa' che contiene il testo da proiettare; 'size' che è la grandezza 
-    della casella di testo che si intende creare [X, Y].'''
-    def __init__(self, master, string, size, pos = [0, 0], bg = (128, 128, 128), 
+    passare la 'stringa' che contiene il testo da proiettare.'''
+    def __init__(self, string, pos = [0, 0], bg = (128, 128, 128), 
                  textcolor = (255, 255, 255), fontname = 'Comic Sans MS', 
                  fontsize = 16, rotation = 0):
-        self.string = string    # contiene il testo
-        self.master = master    # pygame.Surface dove verrà rappresentato il testo
-        self.pos = list(pos)    # posizione in '.master' del testo
-        self._surface = pygame.Surface(self.size) # Surface dove viene creato il testo
-        self._size = list(size)  # dimensioni della '._surface'
+        self.string = string     # contiene il testo
+        self.pos = list(pos)     # posizione in '.master' del testo
         self.bg = list(bg)       # colore di background
         self.rotation = rotation # rotazione della scritta
         self.textcolor = list(textcolor)  # colore del testo
@@ -727,34 +707,26 @@ class GameString():
         self._font = pygame.freetype.SysFont(fontname, fontsize)
         self.textcolor = color
     
-    def clearAndRender(self):
-        '''Pulisce la surface '._surface' e renderizza la scritta nella 
-        Surface '._surface'.'''
-        # Pulisci la surface
-        self._surface = pygame.Surface(self._size)
-        self._surface.fill(self.bg)
-        
-        # Renderizza il font in '._surface'
-        self._font.render_to(self._surface, self.pos, self.string, 
-                            self.textcolor, rotation = self.rotation)
-    def showOnMaster(self):
-        '''Rappresenta la Surface '._surface' in '.master'.'''
-        # Rappresenta la barra nella finestra
-        self.master.blit(self.surface, self.pos)
+    def render(self, surf):
+        '''Renderizza la scritta nella Surface 'surf'.'''
+        # Renderizza il font in '.master'
+        self._font.render_to(surf, self.pos, self.string, self.textcolor, 
+                             rotation = self.rotation, bgcolor = self.bg)
+    
+    def move(self, deltax, deltay):
+        '''Modifica la posizione della scritta all'interno della Surface 
+        '.master' aggiungendo a '.pos' il delta-x e delta-y.'''
+        self.pos[0] += deltax  # Aggiunge delta-x alla posizione
+        self.pos[1] += deltay  # Aggiunge delta-y alla posizione
     
     def __str__(self):
         a = ["<class 'GameInit.GameString'>:\r\n" + 
-             "    .master    -> pygame.Surface\r\n" + 
-             "    .string    -> {}\r\n".format(self.string) + 
-             "    .pos       -> list of 2:\r\n" + 
-             "        [0] x -> {}\r\n".format(self.pos[0]) + 
-             "        [0] y -> {}\r\n".format(self.pos[1]) + 
-             "    .bg        -> {}\r\n".format(self.bg) + 
-             "    .textcolor -> {}\r\n".format(self.textcolor) + 
-             "    .rotation  -> {}\r\n".format(self.rotation) + 
-             "    ._surface  -> pygame.Surface\r\n" + 
-             "    ._size     -> list of 2:\r\n" + 
-             "        [0] x -> {}\r\n".format(self._size[0]) + 
-             "        [0] y -> {}\r\n".format(self._size[1]) + 
-             "    ._font     -> {}\r\n".format(type(self._font))]
+             "        .string    -> {}\r\n".format(self.string) + 
+             "        .pos       -> list of 2:\r\n" + 
+             "            [0] x -> {}\r\n".format(self.pos[0]) + 
+             "            [0] y -> {}\r\n".format(self.pos[1]) + 
+             "        .bg        -> {}\r\n".format(self.bg) + 
+             "        .textcolor -> {}\r\n".format(self.textcolor) + 
+             "        .rotation  -> {}\r\n".format(self.rotation) + 
+             "        ._font     -> {}\r\n".format(type(self._font))]
         return a[0]
