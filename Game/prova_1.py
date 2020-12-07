@@ -58,6 +58,8 @@ rock = gtk.Oggetto("./Sprites/Rocce.png", (2, 0, 36, 34), (800, 200),
 # Aggiungi le rocce a 'root'
 root.OBJadd("ostacolo", rock, objf.collinionObstacles)
 
+##########--- DEBUG ---##########--- DEBUG ---##########
+print(root)
 
 '''
 4) FUNZIONE DI MAINLOOP

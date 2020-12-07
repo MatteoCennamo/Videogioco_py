@@ -16,6 +16,7 @@ INDICE:
     4) CLASSE GameInit:
         -> __init__
         -> MainLoop
+        -> menuOpen
         -> ReLoop
         -> MoveWindow
         -> OBJadd
@@ -47,6 +48,7 @@ INDICE:
     10) CLASSE GameString:
         -> __init__
         -> set_font
+        -> set_string
         -> render
         -> move
         -> __str__
@@ -58,6 +60,7 @@ INDICE:
 '''
 import pygame                # Pacchetto standard per videogame in Python
 import pygame.freetype       # Per il font delle scritte
+import OBJfunctions as objf  # Per le funzioni degli obj e il Menu
 import sys                   # Per lavorare con i moduli e pacchetti
 from itertools import chain  # Per calcoli iterativi su dizionari e liste
 
@@ -199,6 +202,12 @@ class GameInit():
         self.status_bar = StatusBar([-self.window.pos[0], -self.window.pos[1]], 
                                     [self.screen.size[0], 25])
         
+        # Crea il menu
+        self.menu = Oggetto("./Sprites/Menu.png", (0, 0, 186, 134), (0, 0), 
+                            (372, 268), "menu")
+        # Crea la lista delle funzioni del Menu
+        self.menu.fun = [_Wait, _Wait, objf.menuOggetti, _Wait]
+        
         # Crea l'orologio
         self.clock = pygame.time.Clock()
         
@@ -215,6 +224,9 @@ class GameInit():
         # _reloop = False -> esci dal main loop
         self._reloop = True # Di default, entra nel main loop
         
+        # Crea attributo '._freeze' che congela lo schermo se è True
+        self._freeze = False
+        
         # Crea la variabile che mantiene il mainloop
         self.mainloop = lambda: mainloop()
         
@@ -222,9 +234,6 @@ class GameInit():
         # vuoto di default:
         self.obj = {"personaggio": [], "oggetto": [], "ostacolo": [], 
                     "volante": []}
-        
-        ##########--- DEBUG ---##########--- DEBUG ---##########
-        print(str(self))
     
     # Crea il main loop e lo avvia
     def MainLoop(self):
@@ -250,6 +259,13 @@ class GameInit():
                         # Quit
                         if e.key == pygame.K_q:
                             self.run = False
+                        # Apre il Menu
+                        if e.key == pygame.K_m:
+                            # Blocca il movimento del personaggio
+                            self.obj["personaggio"][0].xchange = 0
+                            self.obj["personaggio"][0].ychange = 0
+                            # Apri la funzione del menu
+                            self.menuOpen()
                         
                         if e.key == pygame.K_RIGHT:
                             self.obj["personaggio"][0].xchange = 1
@@ -271,7 +287,7 @@ class GameInit():
                         if e.key == pygame.K_DOWN or e.key == pygame.K_UP:
                             self.obj["personaggio"][0].ychange = 0
                     
-                # Take the time
+                # Prendi il tempo
                 self.dt = self.clock.tick(60)
                 
                 # Modifica la posizione del personaggio
@@ -303,6 +319,67 @@ class GameInit():
         # Quado esci dal main loop
         pygame.quit()
     
+    # Apre il Menu principale
+    def menuOpen(self):
+        '''Apre il Menu principale.'''
+        # Numero di elementi del menu
+        nitems = len(self.menu.fun) # -> numero di funzioni associate al Menu
+        # Elemento del Menu correntemente selezionato
+        current = 0
+        # Riposiziona il Menu in base alla posizione di Window
+        self.menu.x = -self.window.pos[0] + 50
+        self.menu.y = -self.window.pos[1] + (self.screen.size[1] - self.menu.h) / 2
+        
+        # Crea il puntatore
+        puntatore = Oggetto("./Sprites/Menu.png", (0, 0, 1, 1), (self.menu.x, 
+                            self.menu.y), (self.menu.w, 
+                                       int(self.menu.h / nitems)), "puntatore")
+        puntatore.image.set_alpha(100)
+        
+        # Entra nel loop
+        while True:
+            # Scansiono gli input dello user
+            for e in pygame.event.get():
+                # Quit
+                if e.type == pygame.QUIT:
+                    self.run = False
+                    return
+                
+                # Pulsante spinto in basso
+                if e.type == pygame.KEYDOWN:
+                    # Quit
+                    if e.key == pygame.K_q:
+                        self.run = False
+                        return
+                    # Chiude il Menu
+                    if e.key == pygame.K_m:
+                        return
+                    
+                    if e.key == pygame.K_DOWN:
+                        current += 1
+                    
+                    if e.key == pygame.K_UP:
+                        current -= 1
+                    # Se premi 'Invio'
+                    if e.key == pygame.K_RETURN:
+                        if current == nitems - 1:
+                            return # 'ESCI' (è l'ultimo elemento)
+                        else:
+                            # Usa la funzione associata all'elemento selezionato
+                            self.menu.fun[current](self)
+            
+            # Modifica il valore di 'current' in modo che sia tra 0 e 'nitems'
+            current %= nitems
+            # Aggiorna il menu
+            self.window.surface.blit(self.menu.image, (self.menu.x, self.menu.y))
+            # Aggiorna il puntatore
+            puntatore.y = self.menu.y + (self.menu.h / nitems) * current - 1
+            self.window.surface.blit(puntatore.image, (puntatore.x, puntatore.y))
+            # Rappresenta la finestra nella nuova posizione
+            self.screen.set_mode.blit(self.window.surface, self.window.pos)
+            pygame.display.update()
+    
+    # Rappresenta il Menu in Window
     # Avvia un nuovo main loop
     def ReLoop(self, mainloop = _Wait):
         '''Esce dal main loop e rientra con un nuovo 'GameInit.mainloop'.'''
@@ -401,6 +478,7 @@ class GameInit():
              ".screen     -> {}".format(str(self.screen)) + 
              ".window     -> {}".format(str(self.window)) + 
              ".status_bar -> {}".format(str(self.status_bar)) + 
+             ".menu       -> {}".format(self.menu) + 
              ".clock      -> pygame.time.Clock\r\n" + 
              ".dt         -> time frame: {}\r\n".format(str(self.dt)) + 
              ".run        -> logical: {}\r\n".format(self.run) + 
@@ -490,7 +568,7 @@ class StatusBar():
         self.pos = [-root.window.pos[0], -root.window.pos[1]]
         
         # Reimposta il valore della stringa con il numero di monete prese
-        self.text.string = self.string.format(root.obj["personaggio"][0].coins)
+        self.text.set_string(self.string.format(root.obj["personaggio"][0].coins))
         self.text.render(self.surface)  # renderizza la scritta
         
         # Rappresenta la barra nella finestra
@@ -610,10 +688,10 @@ class Oggetto():
     '''Crea un Oggetto che può essere aggiunto all'oggetto 'GameInit' con 
     'GameInit.OBJadd()'. L'oggetto sarà rappresentato nello schermo se avrà 
     l'attributo '.status' = True (opzione di default).'''
-    def __init__(self, path, ritaglio, pos, size, tipo, pl = 0, 
+    def __init__(self, path, ritaglio, pos, size, tipo, status = True, pl = 0, 
                  pv = 0, nFrames = 1):
         # Inizializza tutti gli attributi dell'oggetto 'Oggetto'
-        self.status = True        # True = rappresenta in window
+        self.status = status      # True = rappresenta in window
         self.collided = False     # True = l'oggetto è stato colpito
         self.path = path          # path della sprite
         self.fun = lambda: _Void()# funzione associata all'oggetto
@@ -660,25 +738,26 @@ class Oggetto():
     
     def __str__(self):
         a = ["<class 'GameToolKit.Oggetto'>:\r\n\r\n" + 
-             ".status     -> logical: {}\r\n".format(self.status) + 
-             ".collided   -> logical: {}\r\n".format(self.collided) + 
-             '.type       -> "{}"\r\n'.format(self.type) + 
-             ".chrono     -> {}: {}\r\n".format(type(self.chrono), self.chrono) + 
-             ".fun        -> funzione: {}\r\n".format(str(self.fun)) + 
-             ".image      -> pygame.Surface\r\n" + 
-             ".image_list -> list of {} pygame.Surface\r\n".format(len(self.image_list)) + 
-             '.path       -> {}: "{}"\r\n'.format(type(self.path), self.path) + 
-             ".ritaglio   -> list of 4:\r\n" + 
-             "    [0] x -> {}\r\n".format(self.ritaglio[0]) + 
-             "    [1] y -> {}\r\n".format(self.ritaglio[1]) + 
-             "    [2] w -> {}\r\n".format(self.ritaglio[2]) + 
-             "    [3] h -> {}\r\n".format(self.ritaglio[3]) + 
-             ".x          -> {}: {}\r\n".format(type(self.x), str(self.x)) + 
-             ".y          -> {}: {}\r\n".format(type(self.y), str(self.y)) + 
-             ".w          -> {}: {}\r\n".format(type(self.w), str(self.w)) + 
-             ".h          -> {}: {}\r\n".format(type(self.h), str(self.h)) + 
-             ".pl         -> {}: {}\r\n".format(type(self.pl), str(self.pl)) + 
-             ".pv         -> {}: {}\r\n".format(type(self.pv), str(self.pv))]
+             "    .status     -> logical: {}\r\n".format(self.status) + 
+             "    .collided   -> logical: {}\r\n".format(self.collided) + 
+             '    .type       -> "{}"\r\n'.format(self.type) + 
+             "    .chrono     -> {}: {}\r\n".format(type(self.chrono), self.chrono) + 
+             "    .fun        -> funzione: {}\r\n".format(str(self.fun)) + 
+             "    .image      -> pygame.Surface\r\n" + 
+             "    .image_list -> list of {} pygame.Surface\r\n".format(len(
+                     self.image_list)) + 
+             '    .path       -> {}: "{}"\r\n'.format(type(self.path), self.path) + 
+             "    .ritaglio   -> list of 4:\r\n" + 
+             "        [0] x -> {}\r\n".format(self.ritaglio[0]) + 
+             "        [1] y -> {}\r\n".format(self.ritaglio[1]) + 
+             "        [2] w -> {}\r\n".format(self.ritaglio[2]) + 
+             "        [3] h -> {}\r\n".format(self.ritaglio[3]) + 
+             "    .x          -> {}: {}\r\n".format(type(self.x), str(self.x)) + 
+             "    .y          -> {}: {}\r\n".format(type(self.y), str(self.y)) + 
+             "    .w          -> {}: {}\r\n".format(type(self.w), str(self.w)) + 
+             "    .h          -> {}: {}\r\n".format(type(self.h), str(self.h)) + 
+             "    .pl         -> {}: {}\r\n".format(type(self.pl), str(self.pl)) + 
+             "    .pv         -> {}: {}\r\n".format(type(self.pv), str(self.pv))]
         return a[0]
 
 
@@ -706,6 +785,10 @@ class GameString():
             -> GameString.textcolor (colore della scritta)'''
         self._font = pygame.freetype.SysFont(fontname, fontsize)
         self.textcolor = color
+    
+    def set_string(self, string):
+        '''Modifica la stringa che viene rappresentata nella casella di testo.'''
+        self.string = string
     
     def render(self, surf):
         '''Renderizza la scritta nella Surface 'surf'.'''

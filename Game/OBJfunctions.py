@@ -14,6 +14,9 @@ INDICE:
     3) FUNZIONI DI ANIMAZIONE:
         -> playerAnimation
         -> collisionAnimationObj
+    
+    4) FUNZIONI DEL MENU
+        -> menuOggetti
         
 '''
 
@@ -23,6 +26,7 @@ INDICE:
 # Importa i pacchetti
 import pygame
 import GameToolKit as gtk
+import copy                # Per copiare degli oggetti
 
 
 '''
@@ -140,3 +144,58 @@ def collisionAnimationObj(root, obj, frames):
         # Dopo 'frames' numero di frame, l'animazione termina
         if obj.chrono == frames:
             obj.status = False
+
+'''
+4) FUNZIONI DEL MENU
+'''
+# Qeuste funzioni prendono come input l'oggetto 'GameInit' e lo restituiscono.
+def menuOggetti(root):
+    '''Apre il Menu degli oggetti.'''
+    # Crea la surface che verrà rappresentata
+#    root_copy = copy.deepcopy(root)
+    surf = pygame.Surface(root.screen.size)
+    
+    # Entra nel loop
+    while True:
+        # Scansiono gli input dello user
+        for e in pygame.event.get():
+            # Quit
+            if e.type == pygame.QUIT:
+                root.run = False
+                return
+            
+            # Pulsante spinto in basso
+            if e.type == pygame.KEYDOWN:
+                # Quit
+                if e.key == pygame.K_q:
+                    root.run = False
+                    return
+                # Ritorna al Menu principale
+                if e.key == pygame.K_m:
+                    return
+                
+#                if e.key == pygame.K_DOWN:
+#                    current += 1
+#                
+#                if e.key == pygame.K_UP:
+#                    current -= 1
+#                # Se premi 'Invio'
+#                if e.key == pygame.K_RETURN:
+#                    if current == nitems - 1:
+#                        return # 'ESCI' (è l'ultimo elemento)
+#                    else:
+#                        # Usa la funzione associata all'elemento selezionato
+#                        root = root.menu.fun[current](root)
+        
+        # Aggiorna il menu
+#        self.window.surface.blit(self.menu.image, (self.menu.x, self.menu.y))
+#        # Aggiorna il puntatore
+#        puntatore.y = self.menu.y + (self.menu.h / nitems) * current - 1
+#        self.window.surface.blit(puntatore.image, (puntatore.x, puntatore.y))
+        # Rappresenta la surface nello schermo
+        root.window.surface.blit(surf, (-root.window.pos[0], 
+                                             -root.window.pos[0]))
+#        # Rappresenta la finestra nella nuova posizione
+        root.screen.set_mode.blit(root.window.surface, 
+                                       root.window.pos)
+        pygame.display.update()
