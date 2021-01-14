@@ -26,7 +26,6 @@ INDICE:
 # Importa i pacchetti
 import pygame
 import GameToolKit as gtk
-import copy                # Per copiare degli oggetti
 
 
 '''
@@ -148,7 +147,6 @@ def collisionAnimationObj(root, obj, frames):
 '''
 4) FUNZIONI DEL MENU
 '''
-# Qeuste funzioni prendono come input l'oggetto 'GameInit' e lo restituiscono.
 def menuOggetti(root):
     '''Apre il Menu degli oggetti.'''
     # Crea la surface che verrà rappresentata
@@ -198,4 +196,74 @@ def menuOggetti(root):
 #        # Rappresenta la finestra nella nuova posizione
         root.screen.set_mode.blit(root.window.surface, 
                                        root.window.pos)
+        pygame.display.update()
+
+ # Apre il Menu principale
+def menuOpen(root):
+    '''Apre il Menu principale.'''
+    # funzioni:
+    fun = [gtk._Void, gtk._Void, menuOggetti, gtk._Void]
+    # Numero di elementi del menu
+    nitems = len(fun) # -> numero di funzioni associate al Menu
+    # Elemento del Menu correntemente selezionato
+    current = 0
+    # Riposiziona il Menu in base alla posizione di Window
+    root.obj["menu"][0].x = -root.window.pos[0] + 50
+    root.obj["menu"][0].y = -root.window.pos[1] + (root.screen.size[1] - 
+            root.obj["menu"][0].h) / 2
+    # Riposiziona il puntatore
+    root.obj["menu"][1].x, root.obj["menu"][1].y = root.obj["menu"][0].x, \
+        root.obj["menu"][0].y
+    
+    # Cambia status a puntatore e menu
+    root.obj["menu"][0].status = True
+    root.obj["menu"][1].status = True
+    
+    # Entra nel loop
+    while True:
+        # Scansiono gli input dello user
+        for e in pygame.event.get():
+            # Quit
+            if e.type == pygame.QUIT:
+                root.run = False
+                return
+            
+            # Pulsante spinto in basso
+            if e.type == pygame.KEYDOWN:
+                # Quit
+                if e.key == pygame.K_q:
+                    root.run = False
+                    return
+                # Chiude il Menu
+                if e.key == pygame.K_m:
+                    root.obj["menu"][0].status = False
+                    root.obj["menu"][1].status = False
+                    return
+                
+                if e.key == pygame.K_DOWN:
+                    current += 1
+                
+                if e.key == pygame.K_UP:
+                    current -= 1
+                # Se premi 'Invio'
+                if e.key == pygame.K_RETURN:
+                    if current == nitems - 1:
+                        root.obj["menu"][0].status = False
+                        root.obj["menu"][1].status = False
+                        return # 'ESCI' (è l'ultimo elemento)
+                    else:
+                        # Usa la funzione associata all'elemento selezionato
+                        fun[current](root)
+        
+        # Modifica il valore di 'current' in modo che sia tra 0 e 'nitems'
+        current %= nitems
+        # Aggiorna posizione del puntatore
+        root.obj["menu"][1].y = root.obj["menu"][0].y + (current * 
+                root.obj["menu"][1].h) - 1
+        # Pulisci la surface di 'root.window'
+        root.window.surface = pygame.Surface(root.window.size)
+        # Colora la surface di 'root.window' di verde
+        root.window.surface.fill(gtk.GREEN)
+        # Aggiorna la finestra
+        root.updateWindow()
         pygame.display.update()
