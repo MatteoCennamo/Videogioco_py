@@ -17,6 +17,7 @@ INDICE:
     
     4) FUNZIONI DEL MENU
         -> menuOggetti
+        -> menuOpen
         
 '''
 
@@ -99,13 +100,13 @@ def playerAnimation(root = None, obj = None):
         obj.chrono = 0  # resetta il cronometro
     else:  # il personaggio è in movimento
         timeframe = 8   # numero di frame prima del cambio immagine
-        if obj.ychange == -1: # si sta muovendo verso l'alto
+        if obj.ychange < 0: # si sta muovendo verso l'alto
             direction = "up"
-        if obj.ychange == 1:
+        if obj.ychange > 0:
             direction = "down"
-        if obj.xchange == -1: # si sta muovendo verso sinistra
+        if obj.xchange < 0: # si sta muovendo verso sinistra
             direction = "left"
-        if obj.xchange == 1:
+        if obj.xchange > 0:
             direction = "right"
         # Prendi da 'obj.image_dict' l'immagine corrispondente al movimento 
         # ('up', down', ...) e al cronometro

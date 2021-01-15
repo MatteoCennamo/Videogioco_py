@@ -17,7 +17,6 @@ INDICE:
         -> __init__
         -> MainLoop
         -> ReLoop
-        -> MoveWindow
         -> OBJadd
         -> updateWindow
         -> __str__
@@ -28,6 +27,8 @@ INDICE:
         
     6) CLASSE Window:
         -> __init__
+        -> MoveWindow
+        -> render
         -> __str__
     
     7) CLASSE StatusBar:
@@ -37,11 +38,13 @@ INDICE:
         
     8) CLASSE Personaggio:
         -> __init__
+        -> render
         -> __str__
         
     9) CLASSE Oggetto:
         -> __init__
         -> cutImage
+        -> render
         -> __str__
     
     10) CLASSE GameString:
@@ -148,6 +151,19 @@ def collisionDetection(root, collider, collided):
             out = out + "4"      # caso 4
     return out
 
+# Lancia funzioone degli obj e rappresentali in 'Window'
+def OBJactivete(obj, root):
+    '''Lancia la funzione dell'obj se il menu è chiuso e renderizza l'obj in 
+    'Window' se 'obj.status' = True. 'obj' è un oggetto 'Personaggio' o 'Oggetto'.
+    'root' è un oggetto 'GameInit'.'''
+    # Lancia la funzione associata all'obj (solo se il menu è chiuso)
+    if root.obj["menu"][0].status == False:
+        root, obj = obj.fun(root = root, obj = obj)
+    # Solo se status = True
+    if obj.status:
+        # Rappresenta gli obj nella window
+#         root.window.surface.blit(obj.image, (obj.x, obj.y))
+        obj.render(root.window.surface)
 
 '''
 4) CLASSE GAMEINIT
@@ -230,7 +246,7 @@ class GameInit():
         # Crea un dizionario di oggetti.
         # vuoto di default:
         self.obj = {"personaggio": [], "oggetto": [], "ostacolo": [], 
-                    "volante": [], "menu": []}
+                    "volante": [], "pavimento": [], "menu": []}
         
         # Aggiungi il Menu agli obj
         self.OBJadd("menu", menu, objf.menuOpen)
@@ -292,9 +308,14 @@ class GameInit():
                 if not any([keys[pygame.K_UP], keys[pygame.K_DOWN]]) or \
                     all([keys[pygame.K_UP], keys[pygame.K_DOWN]]):
                     self.obj["personaggio"][0].ychange = 0
+                # Se sia la velocità in x che in y sono diverse da 0, diminuiscile
+                if all([self.obj["personaggio"][0].xchange, 
+                        self.obj["personaggio"][0].ychange]):
+                    self.obj["personaggio"][0].xchange /= 1.414
+                    self.obj["personaggio"][0].ychange /= 1.414
                 
                 # Prendi il tempo
-                self.dt = self.clock.tick(60)
+                self.dt = self.clock.tick(60)  # 60
                 
                 # Modifica la posizione del personaggio
                 self.obj["personaggio"][0].x += self.obj[
@@ -315,8 +336,8 @@ class GameInit():
                            ] - self.obj["personaggio"][0].h:
                     self.obj["personaggio"][0].y = self.window.size[1
                             ] - self.obj["personaggio"][0].h
-                if self.obj["personaggio"][0].y < 0:
-                    self.obj["personaggio"][0].y = 0
+                if self.obj["personaggio"][0].y < self.status_bar.size[1]: # < 0:
+                    self.obj["personaggio"][0].y = self.status_bar.size[1] # = 0
                 
                 # Avvia il main loop
                 self.mainloop()
@@ -338,28 +359,6 @@ class GameInit():
         # Rientra nel nuovo main loop
         self._reloop = True
     
-    # Muovi finestra
-    def MoveWindow(self, delta_pos):
-        '''Modifica la posizione relativa dell'oggetto 'Window' rispetto 
-        all'oggetto 'Screen' (che sta fisso).'''
-        # 'delta_pos' -> tupla che contiene lo spostamento in x e y
-        
-        # Pulisci lo schermo (necessario solo se le dimensioni della 
-        # finestra sono più piccole di quello dello schermo)
-        # self.screen.set_mode.fill(sys.modules[__name__].GRAY)
-        # Aggiorna i valori della posizione della finestra
-        self.window.pos[0] += delta_pos[0]
-        self.window.pos[1] += delta_pos[1]
-        
-        # Fai i controlli della posizione della finestra:
-        for i in [0, 1]: # -> 0 = X; 1 = Y
-            # X/Y > 0
-            if self.window.pos[i] > 0:
-                self.window.pos[i] = 0
-            # X/Y < di tot
-            if self.window.pos[i] < self.screen.size[i] - self.window.size[i]:
-                self.window.pos[i] = self.screen.size[i] - self.window.size[i]
-    
     # Aggiorna la finestra
     def updateWindow(self):
         '''Sposta la finestra 'Window' a seconda della posizione dell'oggetto 
@@ -367,11 +366,17 @@ class GameInit():
         True nella '.surface' di 'Window'. Rappresenta la barra di stato
         'GameInit.status_bar'. Renderizza 'Window.surface' in 
         'GameInit.screen.set_mode.'''
+        # Scansiona gli obj 'pavimento'.
+        # I pavimenti sono rappresentati in ordine di apparizione in 
+        # 'self.obj['pavimento']'.
+        for e in self.obj['pavimento']:
+            # Lancia la funzione e renderizza l'obj
+            OBJactivete(e, self)
         
-        # Crea una lista di tutti gli oggetti (tranne 'volante' e 'menu')
+        # Crea una lista di tutti gli oggetti (tranne 'volante', 'pavimento' e 'menu')
         OBJlist = []
         for k, v in self.obj.items():
-            if k not in ('volante', 'menu'):
+            if k not in ('volante', 'pavimento', 'menu'):
                 OBJlist += v
         
         # Ordina gli oggetti per y+h (in ordine crescente)
@@ -379,13 +384,8 @@ class GameInit():
         
         # Scansiona gli obj
         for e in OBJlist:
-            # Lancia la funzione associata all'obj (solo se il menu è chiuso)
-            if self.obj["menu"][0].status == False:
-                self, e = e.fun(root = self, obj = e)
-            # Solo se status = True
-            if e.status:
-                # Rappresenta gli obj nella window
-                 self.window.surface.blit(e.image, (e.x, e.y))
+            # Lancia la funzione e renderizza l'obj
+            OBJactivete(e, self)
         
         # Crea la lista dei valori ordinati per y+h dei 'volante'
         OBJvolante = self.obj['volante']
@@ -393,20 +393,16 @@ class GameInit():
         
         # Scansiona gli obj 'volante'
         for e in OBJvolante:
-            # Lancia la funzione associata all'obj (solo se il menu è chiuso)
-            if self.obj["menu"][0].status == False:
-                self, e = e.fun(root = self, obj = e)
-            # Solo se status = True
-            if e.status:
-                # Rappresenta gli obj nella window
-                 self.window.surface.blit(e.image, (e.x, e.y))
+            # Lancia la funzione e renderizza l'obj
+            OBJactivete(e, self)
         
         # Scansiona menu
         for e in self.obj["menu"]:
             # Solo se status = True
             if e.status:
                 # Rappresenta gli obj nella window
-                 self.window.surface.blit(e.image, (e.x, e.y))
+#                self.window.surface.blit(e.image, (e.x, e.y))
+                e.render(self.window.surface)
         
         # Sposta la finestra insieme al personaggio
         dx = [self.obj["personaggio"][0].x - self.screen.size[0] / 2 + 
@@ -415,15 +411,16 @@ class GameInit():
               self.window.pos[1] + self.obj["personaggio"][0].h / 2]
         
         # Sporta la finestra
-        self.MoveWindow((-dx[0], -dy[0]))
+        self.window.MoveWindow((-dx[0], -dy[0]), self.screen.size)
         
         # Aggiungi riga di stato in alto
         self.status_bar.updateBar(self)
         # Rappresenta la finestra nella nuova posizione
-        self.screen.set_mode.blit(self.window.surface, self.window.pos)
+#        self.screen.set_mode.blit(self.window.surface, self.window.pos)
+        self.window.render(self.screen)
     
     # Aggiung oggetti a .obj
-    def OBJadd(self, objType, obj, fun):
+    def OBJadd(self, objType, obj, fun = _Void):
         '''Aggiunge un oggetto al dizionario 'GameInit.obj'. 'objType' è la 
         chiave del dizionario, 'obj' è il valore corrispondente che si vuole 
         aggiungere (deve essere di tipo 'Oggetto' o 'Personaggio'). 'fun' è 
@@ -450,6 +447,7 @@ class GameInit():
              "    [oggetto]     -> list of {}\r\n".format(len(self.obj["oggetto"])) + 
              "    [ostacolo]    -> list of {}\r\n".format(len(self.obj["ostacolo"])) + 
              "    [volante]     -> list of {}\r\n".format(len(self.obj["volante"])) + 
+             "    [pavimento]   -> list of {}\r\n".format(len(self.obj["pavimento"])) + 
              "    [menu]        -> list of {}\r\n".format(len(self.obj["menu"]))]
         return a[0]
 
@@ -487,6 +485,33 @@ class Window():
         self.surface = pygame.Surface(size)  # Surface
         self.size = list(size)               # dimenzioni della mappa
         self.pos = list(pos)                 # posizione rispetto a 'Screen'
+    
+    # Muovi finestra
+    def MoveWindow(self, delta_pos, screen_size):
+        '''Modifica la posizione relativa dell'oggetto 'Window' rispetto 
+        all'oggetto 'Screen' (che sta fisso). 'screen_size' è una tupla che 
+        contiene le dimensioni dell'oggetto 'Screen'.'''
+        # 'delta_pos' -> tupla che contiene lo spostamento in x e y
+        
+        # Pulisci lo schermo (necessario solo se le dimensioni della 
+        # finestra sono più piccole di quello dello schermo)
+        # self.screen.set_mode.fill(sys.modules[__name__].GRAY)
+        # Aggiorna i valori della posizione della finestra
+        self.pos[0] += delta_pos[0]
+        self.pos[1] += delta_pos[1]
+        
+        # Fai i controlli della posizione della finestra:
+        for i in [0, 1]: # -> 0 = X; 1 = Y
+            # X/Y > 0
+            if self.pos[i] > 0:
+                self.pos[i] = 0
+            # X/Y < di tot
+            if self.pos[i] < screen_size[i] - self.size[i]:
+                self.pos[i] = screen_size[i] - self.size[i]
+    
+    def render(self, screen):
+        '''Renderizza 'Window' in 'Screen'.'''
+        screen.set_mode.blit(self.surface, self.pos)
     
     # Cosa restituisce quando usi la funzione 'str'
     def __str__(self):
@@ -610,6 +635,10 @@ class Personaggio():
         # self.image = pygame.transform.scale(self.image, size)
         self.OLDdirection = "down"
     
+    def render(self, surf):
+        '''Renderizza il 'Personaggio' in una 'Surface'.'''
+        surf.blit(self.image, (self.x, self.y))
+    
     def __str__(self):
         a = ["<class 'GameToolKit.Personaggio'>:\r\n\r\n" + 
              ".status       -> logical: {}\r\n".format(self.status) + 
@@ -699,6 +728,10 @@ class Oggetto():
         
         # Prendi l'immagine di default
         return self.image_list[0]  # la prima
+    
+    def render(self, surf):
+        '''Renderizza l'Oggetto in una 'Surface'.'''
+        surf.blit(self.image, (self.x, self.y))
     
     def __str__(self):
         a = ["<class 'GameToolKit.Oggetto'>:\r\n\r\n" + 
