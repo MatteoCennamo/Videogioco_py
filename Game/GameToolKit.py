@@ -12,6 +12,9 @@ INDICE:
         -> _Wait
         -> _Void
         -> collisionDetection
+        -> OBJactivete
+        -> truncString2List
+        -> questYesNo
         
     4) CLASSE GameInit:
         -> __init__
@@ -54,6 +57,12 @@ INDICE:
         -> render
         -> move
         -> __str__
+    
+    11) CLASSE ResponceBox:
+        -> __init__
+        -> render
+        -> cursorMove
+        -> configure
 
 '''
 
@@ -162,8 +171,107 @@ def OBJactivete(obj, root):
     # Solo se status = True
     if obj.status:
         # Rappresenta gli obj nella window
-#         root.window.surface.blit(obj.image, (obj.x, obj.y))
         obj.render(root.window.surface)
+
+# Trasforma una stringa in una lista di stringhe
+def truncString2List(s, limit):
+    '''Trasforma una stringa in una lista di stringhe. Le stringhe sono troncate 
+     dopo 'limit' numero di caratteri.'''
+    l_txt = s.split('\n')
+    list_txt = []
+    def handleLimit(s, limit):
+        '''Tronca una stringa al limite di caratteri, trasformandola in lista.'''
+        list_txt = []   # Inizializza lista di output
+        partial_s = ''  # Inizializza stringa parziale
+        for w in s.split(' '): # Prendi parola per parola
+            len_partial = len(partial_s)
+            if len_partial + len(w)  + 1 > limit: # Limite superato
+                if not partial_s:   # se partial_s è vuoto
+                    list_txt += [' ' + w]
+                else: # limite superato, ma partial_s non è vuoto
+                    list_txt += [partial_s]
+                    partial_s = ' ' + w
+            else: # Limite non superato
+                partial_s += ' ' + w
+        list_txt += [partial_s]
+        return list_txt
+    for i in l_txt:
+        list_txt += handleLimit(i, limit)
+    return [s[1:] for s in list_txt if len(s) > 0]
+
+def questYesNo(root, domanda, ans1 = 'No', ans2 = 'Sì', truncQuest = 100, 
+               truncAns = 100, QuestBoxSize = None, AnsBoxSize = (94, 56), 
+               QuestTextSize = 20, AnsTextSize = 28, QuestPadx = 5, QuestPady = 5, 
+               AnsPadx = 5, AnsPady = 10, QuestBg = (255, 255, 255), 
+               AnsBg = (255, 255, 255), QuestTextColor = (0, 0, 0), AnsTextColor = 
+               (0, 0, 0), current = 0):
+    '''Crea una barra dove viene rappresentata la 'domanda'. Si può rispondere 
+    'sì' o 'no' alla domanda. Restituisce 0 se è stato risposto 'no', 1 se la 
+    risposta è 'sì'. 'domanda' è una stringa (puoi andare a capo con '\n'). 
+    'truncQuest' è il limite di caratteri di 'domnda' prima di andare a capo. 
+    'truncAns' è il numero di caratteri di 'ans1' e 'ans2' prima di andare a 
+    capo. 
+    'QuestBoxSize' è la tupla che contiene le dimensioni della finestra che 
+    contiene la domada (di default, larghezza pari a quella dello schermo e una 
+    altezza pari a 1/6 di quella dello schermo).
+    'AnsBoxSize' è la tupla che contiene le dimensioni della finestra che 
+    contiene le risposte. 
+    'QuestTextSize' è la frandezza del font della domanda; 'AnsTextSize' quello 
+    delle risposte.
+    'QuestBg' e 'AnsBg' sono il colore di background.
+    'current' è la risposta data di default.'''
+    # Crea la surface che verrà rappresentata
+    if QuestBoxSize == None:
+        surf_x, surf_y = root.screen.size[0], root.screen.size[1] / 6
+    else:
+        surf_x, surf_y = QuestBoxSize
+    list_txt = truncString2List(domanda, truncQuest)
+    surf = ResponceBox((surf_x, surf_y), list_txt, cursor = False, fontsize = 
+                           QuestTextSize, padx = QuestPadx, pady = QuestPady, 
+                           bg = QuestBg, textcolor = QuestTextColor)
+    
+    # Crea il box che contiene le risposte
+    ansBox = ResponceBox(AnsBoxSize, truncString2List(ans1, truncAns), 
+                             truncString2List(ans2, truncAns), fontsize = AnsTextSize, 
+                             padx = AnsPadx, pady = AnsPady, bg = AnsBg, textcolor = 
+                             AnsTextColor, current = current)
+    
+    # Entra nel loop
+    while True:
+        # Scansiono gli input dello user
+        for e in pygame.event.get():
+            # Pulsante spinto in basso
+            if e.type == pygame.KEYDOWN:
+                
+                # Pigia pulsante a destra o sinistra
+                if e.key == pygame.K_RIGHT:
+                    # Modifica il cursore e il valore di ritorno
+                    ansBox.cursorMove(1)
+                if e.key == pygame.K_LEFT:
+                    # Modifica il cursore e il valore di ritorno
+                    ansBox.cursorMove(-1)
+                
+                # Se premi 'Invio'
+                if e.key == pygame.K_RETURN:
+                    return ansBox.current
+        
+        # Pulisci la surface di 'root.window'
+        root.window.surface = pygame.Surface(root.window.size)
+        # Colora la surface di 'root.window' di verde
+        root.window.surface.fill(sys.modules[__name__].GREEN)
+        
+        # Aggiorna la finestra
+        root.updateWindow()
+        # Rappresenta la surface con la domanda nello schermo
+        surf.render(root.window.surface, (-root.window.pos[0], -root.window.pos[1] \
+                                        + root.screen.size[1] - surf_y + 1))
+        # Rappresenta la surface con il box delle risposte nello schermo
+        ansBox.render(root.window.surface, (-root.window.pos[0] + root.screen.size[0] \
+                                            - ansBox.size[0] - 10, -root.window.pos[1] \
+                                            + root.screen.size[1] - surf_y - \
+                                            ansBox.size[1] - 10))
+        root.screen.set_mode.blit(root.window.surface, root.window.pos)
+        pygame.display.update()
 
 '''
 4) CLASSE GAMEINIT
@@ -401,7 +509,6 @@ class GameInit():
             # Solo se status = True
             if e.status:
                 # Rappresenta gli obj nella window
-#                self.window.surface.blit(e.image, (e.x, e.y))
                 e.render(self.window.surface)
         
         # Sposta la finestra insieme al personaggio
@@ -416,7 +523,6 @@ class GameInit():
         # Aggiungi riga di stato in alto
         self.status_bar.updateBar(self)
         # Rappresenta la finestra nella nuova posizione
-#        self.screen.set_mode.blit(self.window.surface, self.window.pos)
         self.window.render(self.screen)
     
     # Aggiung oggetti a .obj
@@ -772,7 +878,7 @@ class GameString():
         self.bg = list(bg)       # colore di background
         self.rotation = rotation # rotazione della scritta
         self.textcolor = list(textcolor)  # colore del testo
-        self.set_font(fontname = 'Comic Sans MS', fontsize = 16, 
+        self.set_font(fontname = 'Comic Sans MS', fontsize = fontsize, 
                       color = self.textcolor)
     
     def set_font(self, fontname = 'Comic Sans MS', fontsize = 16, 
@@ -810,3 +916,119 @@ class GameString():
              "        .rotation  -> {}\r\n".format(self.rotation) + 
              "        ._font     -> {}\r\n".format(type(self._font))]
         return a[0]
+
+'''
+11) CLASSE RESPONCEBOX
+'''
+class ResponceBox():
+    '''Crea una finestra che contiene a sinistra la risposta 1 ('ans1') e a 
+    destra la risposta 2 ('ans2'). Il puntatore può muoversi da 'ans1' (quando 
+    '.current' = 0) a 'ans2' (quando '.current' = 1). 'ans1' e 'ans2' devono 
+    essere delle liste del tipo di quelle create con 'OBJfunctions.truncString2List'.
+    'size' è la dimensione totale del box. Se 'ans2' non viene dato, crea un 
+    unico box. 'size' è una tupla che contiene la dimensione del box (x, y).
+    'bg' è il colore di background (di default, bianco).'''
+    def __init__(self, size, *args, current = 0, bg = (255, 255, 255), 
+                 textcolor = (0, 0, 0), cursor = True, fontsize = 16, 
+                 fontname = 'Comic Sans MS', padx = 5, pady = 5, edgeWidth = 5, 
+                 inline = None):
+        self.ans = args             # colonne di scritte
+        self.n_ans = len(self.ans)  # numero di risposte
+        self.size = size            # dimensioni del box
+        self.current = current      # valore scelto
+        self.bg = bg                # colore di background
+        self.textcolor = textcolor  # colore del testo
+        self.fontsize = fontsize    # dimensioni del font
+        self.fontname = fontname    # tipo di font
+        self.edgeWidth = edgeWidth  # spessore del bordo
+        if inline == None:
+            inline = fontsize + 2
+        self.inline = inline        # interlinea
+        self.padx = padx            # spaziatura da sinistra
+        self.pady = pady            # spaziatura dall'alto
+        self.cursor = cursor        # 'True' se il cursore viene rappresentato
+        # Dimmensioni del cursore
+        self.cursor_size = ((self.size[0] - 2 * edgeWidth) / self.n_ans, 
+                            self.size[1] - 2 * edgeWidth)
+        # Posizione del cursore nella box
+        self.cursor_pos = (edgeWidth + self.current * self.cursor_size[0], edgeWidth)
+        # Surface del cursore
+        self.cursor_surface = pygame.Surface(self.cursor_size)
+        
+        # Crea la surface principale del box
+        self.surface = pygame.Surface(self.size)
+        self.surface.fill(self.bg, rect = (edgeWidth, edgeWidth, self.size[0] - 
+                                           2 * edgeWidth, self.size[1] - 2 * edgeWidth))
+        
+        # Aggiungi ans
+        idx_ans = 0    # indice in 'self.ans'
+        for a in self.ans:
+            idx = 0
+            # Crea il testo
+            for t in a:
+                txt = GameString(t, pos = [edgeWidth + padx * (idx_ans + 1) + idx_ans * (
+                        self.size[0] - 2 * (edgeWidth + padx)) / self.n_ans, edgeWidth + \
+            pady + idx * self.inline], bg = self.bg, textcolor = self.textcolor, \
+            fontsize = fontsize, fontname = fontname)
+                txt.render(self.surface)
+                idx += 1
+            idx_ans += 1
+        
+        # Crea trasparenza del cursore
+        if self.cursor:
+            self.cursor_surface.set_alpha(100)
+        else:
+            self.cursor_surface.set_alpha(0) # Trasparente
+    
+    def render(self, surf, pos):
+        '''Renderizza il box nella 'pygame.Surface' ('surf') nella posizione in 
+        'pos' (x, y).'''
+        # Renderizza la surface
+        surf.blit(self.surface, pos)
+        
+        # Renderizza il cursore
+        surf.blit(self.cursor_surface, [pos[0] + self.cursor_pos[0], pos[1] + 
+                                self.cursor_pos[1]])
+    
+    def cursorMove(self, direction):
+        '''Modifica 'self.current' e la posizione del cursore a seconda del valore 
+        di 'direction' (è un intero che indica di quanto vai avanti o indietro).'''
+        self.current += direction
+        self.current %= self.n_ans
+        
+        # Modifica la posizione del cursore
+        self.cursor_pos = (self.edgeWidth + self.current * self.cursor_size[0], 
+                           self.edgeWidth)
+    
+    def configure(self, size = None, current = None, bg = None, 
+                 textcolor = None, cursor = None, fontsize = None, 
+                 fontname = None, padx = None, pady = None, edgeWidth = None, 
+                 inline = None):
+        if size != None:
+            self.size = size
+        if current != None:
+            self.current = current
+        if bg != None:
+            self.bg = bg
+        if textcolor != None:
+            self.textcolor = textcolor
+        if cursor != None:
+            self.cursor = cursor
+        if fontsize != None:
+            self.fontsize = fontsize
+        if fontname != None:
+            self.fontname = fontname
+        if padx != None:
+            self.padx = padx
+        if pady != None:
+            self.pady = pady
+        if edgeWidth != None:
+            self.edgeWidth = edgeWidth
+        if inline != None:
+            self.inline = inline
+        # Aggiorna la surface della finestra con i nuovi valori
+        self.__init__(self.size, *self.ans, current = self.current, bg = 
+                      self.bg, textcolor = self.textcolor, cursor = self.cursor, 
+                      fontsize = self.fontsize, fontname = self.fontname, padx = 
+                      self.padx, pady = self.pady, edgeWidth = self.edgeWidth, 
+                      inline = self.inline)
