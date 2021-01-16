@@ -16,6 +16,7 @@ INDICE:
         -> collisionAnimationObj
     
     4) FUNZIONI DEL MENU
+        -> menuSalva
         -> menuOggetti
         -> menuOpen
         
@@ -27,6 +28,7 @@ INDICE:
 # Importa i pacchetti
 import pygame
 import GameToolKit as gtk
+import pickle               # Per leggere e scrivere file binari
 
 
 '''
@@ -148,10 +150,20 @@ def collisionAnimationObj(root, obj, frames):
 '''
 4) FUNZIONI DEL MENU
 '''
+def menuSalva(root):
+    ans = gtk.questYesNo(root, '''Salvare questo salvataggio?
+Sei proprio sicuro?
+Va bene...''', ans1 = "No! Lasciami\nstare!", ans2 = "Sì, fammi\nsalvare!", 
+AnsBoxSize = (300, 84), AnsTextSize = 22, AnsPadx = 10, AnsPady = 15)
+#    if ans:
+#        # Apri il file 'salvataggio'
+#        with open('salvataggio.pickle', 'wb') as f:
+#            # Sovrascrivi il salvataggio
+#            pickle.dump(root.obj, f)
+
 def menuOggetti(root):
     '''Apre il Menu degli oggetti.'''
     # Crea la surface che verrà rappresentata
-#    root_copy = copy.deepcopy(root)
     surf = pygame.Surface(root.screen.size)
     
     # Entra nel loop
@@ -172,7 +184,6 @@ def menuOggetti(root):
                 # Ritorna al Menu principale
                 if e.key == pygame.K_m:
                     return
-                
 #                if e.key == pygame.K_DOWN:
 #                    current += 1
 #                
@@ -192,18 +203,16 @@ def menuOggetti(root):
 #        puntatore.y = self.menu.y + (self.menu.h / nitems) * current - 1
 #        self.window.surface.blit(puntatore.image, (puntatore.x, puntatore.y))
         # Rappresenta la surface nello schermo
-        root.window.surface.blit(surf, (-root.window.pos[0], 
-                                             -root.window.pos[0]))
-#        # Rappresenta la finestra nella nuova posizione
-        root.screen.set_mode.blit(root.window.surface, 
-                                       root.window.pos)
+        root.window.surface.blit(surf, (-root.window.pos[0], -root.window.pos[1]))
+        # Rappresenta la finestra nella nuova posizione
+        root.screen.set_mode.blit(root.window.surface, root.window.pos)
         pygame.display.update()
 
  # Apre il Menu principale
 def menuOpen(root):
     '''Apre il Menu principale.'''
     # funzioni:
-    fun = [gtk._Void, gtk._Void, menuOggetti, gtk._Void]
+    fun = [menuSalva, gtk._Void, menuOggetti, gtk._Void]
     # Numero di elementi del menu
     nitems = len(fun) # -> numero di funzioni associate al Menu
     # Elemento del Menu correntemente selezionato
