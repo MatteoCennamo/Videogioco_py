@@ -34,6 +34,9 @@ import pickle               # Per leggere e scrivere file binari
 '''
 2) FUNZIONI DI COLLISIONE
 '''
+def _Void(root = None, obj = None):
+    return root, obj
+
 def collinionObstacles(root = None, obj = None):
     '''Funzione associata a oggetti impenetrabili per il personaggio.'''
     if obj.status:  # se è visibile
@@ -101,7 +104,7 @@ def playerAnimation(root = None, obj = None):
         obj.image = obj.image_dict[obj.OLDdirection][1]
         obj.chrono = 0  # resetta il cronometro
     else:  # il personaggio è in movimento
-        timeframe = 8   # numero di frame prima del cambio immagine
+        timeframe = 3 # 8   # numero di frame prima del cambio immagine
         if obj.ychange < 0: # si sta muovendo verso l'alto
             direction = "up"
         if obj.ychange > 0:
@@ -154,7 +157,7 @@ def menuSalva(root):
     ans = gtk.questYesNo(root, '''Salvare questo salvataggio?
 Sei proprio sicuro?
 Va bene...''', ans1 = "No! Lasciami\nstare!", ans2 = "Sì, fammi\nsalvare!", 
-AnsBoxSize = (300, 84), AnsTextSize = 22, AnsPadx = 10, AnsPady = 15)
+AnsBoxSize = (300, 84), AnsParams = {'fontsize': 22, 'padx': 10, 'pady': 15})
 #    if ans:
 #        # Apri il file 'salvataggio'
 #        with open('salvataggio.pickle', 'wb') as f:

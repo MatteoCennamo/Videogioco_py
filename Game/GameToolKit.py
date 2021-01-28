@@ -201,10 +201,7 @@ def truncString2List(s, limit):
 
 def questYesNo(root, domanda, ans1 = 'No', ans2 = 'Sì', truncQuest = 100, 
                truncAns = 100, QuestBoxSize = None, AnsBoxSize = (94, 56), 
-               QuestTextSize = 20, AnsTextSize = 28, QuestPadx = 5, QuestPady = 5, 
-               AnsPadx = 5, AnsPady = 10, QuestBg = (255, 255, 255), 
-               AnsBg = (255, 255, 255), QuestTextColor = (0, 0, 0), AnsTextColor = 
-               (0, 0, 0), current = 0):
+               QuestParams = None, AnsParams = None):
     '''Crea una barra dove viene rappresentata la 'domanda'. Si può rispondere 
     'sì' o 'no' alla domanda. Restituisce 0 se è stato risposto 'no', 1 se la 
     risposta è 'sì'. 'domanda' è una stringa (puoi andare a capo con '\n'). 
@@ -216,25 +213,39 @@ def questYesNo(root, domanda, ans1 = 'No', ans2 = 'Sì', truncQuest = 100,
     altezza pari a 1/6 di quella dello schermo).
     'AnsBoxSize' è la tupla che contiene le dimensioni della finestra che 
     contiene le risposte. 
-    'QuestTextSize' è la frandezza del font della domanda; 'AnsTextSize' quello 
-    delle risposte.
-    'QuestBg' e 'AnsBg' sono il colore di background.
-    'current' è la risposta data di default.'''
+    'QuestParams' è un dizionario che contiene i parametri per il testo della 
+    domanda, mentre 'AnsParams' è quello per la risposta. I parametri che possono 
+    essere immessi sono quelli di dell'oggetto 'ResponceBox'.'''
+    if QuestParams == None:
+        QuestParams = {}
+    if AnsParams == None:
+        AnsParams = {}
     # Crea la surface che verrà rappresentata
     if QuestBoxSize == None:
         surf_x, surf_y = root.screen.size[0], root.screen.size[1] / 6
     else:
         surf_x, surf_y = QuestBoxSize
+    # Valori di default di 'QuestParams'
+    DefQP = {'fontsize': 20, 'padx': 5, 'pady': 5, 'bg': (255, 255, 255), 
+             'textcolor': (0, 0, 0), 'cursor': False}
+    # Modifica QuestParams con i valori di default
+    for k, v in DefQP.items():
+        if k not in QuestParams:
+            QuestParams[k] = v
+    # Valori di default di 'AnsParams'
+    AnsQP = {'fontsize': 28, 'padx': 5, 'pady': 10, 'bg': (255, 255, 255), 
+             'textcolor': (0, 0, 0), 'cursor': True, 'current': 0}
+    # Modifica AnsParams con i valori di default
+    for k, v in AnsQP.items():
+        if k not in AnsParams:
+            AnsParams[k] = v
+    
     list_txt = truncString2List(domanda, truncQuest)
-    surf = ResponceBox((surf_x, surf_y), list_txt, cursor = False, fontsize = 
-                           QuestTextSize, padx = QuestPadx, pady = QuestPady, 
-                           bg = QuestBg, textcolor = QuestTextColor)
+    surf = ResponceBox((surf_x, surf_y), list_txt, **QuestParams)
     
     # Crea il box che contiene le risposte
     ansBox = ResponceBox(AnsBoxSize, truncString2List(ans1, truncAns), 
-                             truncString2List(ans2, truncAns), fontsize = AnsTextSize, 
-                             padx = AnsPadx, pady = AnsPady, bg = AnsBg, textcolor = 
-                             AnsTextColor, current = current)
+                             truncString2List(ans2, truncAns), **AnsParams)
     
     # Entra nel loop
     while True:
@@ -284,7 +295,20 @@ def questYesNo(root, domanda, ans1 = 'No', ans2 = 'Sì', truncQuest = 100,
 class GameInit():
     '''Inizializza il gioco.'''
     def __init__(self, title = "Default title", screen_size = (1000, 700), 
-                 window_size = (1000, 700), pos_wd = (0, 0), mainloop = _Wait):
+                 window_size = (1000, 700), pos_wd = (0, 0), mainloop = _Wait, 
+                 tkinterObject = None, builderMode = False):
+        # Integrare a tkinter. 'tkinterObject' è un 'tkinter.Tk'
+        if tkinterObject == None:
+            self.tkinterObject = None
+        else:
+            self.tkinterObject = tkinterObject
+        
+        # Verifica se si trova in Builder Mode
+        if builderMode:
+            self.builderMode = True
+        else:
+            self.builderMode = False
+        
         # Inizializza 'pygame'
         pygame.init()
         
@@ -391,12 +415,37 @@ class GameInit():
                         if e.key == pygame.K_q:
                             self.run = False
                         # Apre il Menu
-                        if e.key == pygame.K_m:
+                        if e.key == pygame.K_m and not self.builderMode:
                             # Blocca il movimento del personaggio
                             self.obj["personaggio"][0].xchange = 0
                             self.obj["personaggio"][0].ychange = 0
                             # Apri la funzione del menu
                             objf.menuOpen(self)
+                        # Se premi 'Invio'
+                        if e.key == pygame.K_RETURN and self.builderMode:
+                            # Aggiungi l'obj corrente alla lista del tkinter object
+                            old_obj = self.obj["personaggio"][0]
+                            self.tkinterObject.obj += \
+                            [{'CLASS': self.tkinterObject.main_frame.combo_class.get(),
+                              'CAT': self.tkinterObject.main_frame.combo_cat.get(), 
+                              'X': old_obj.ritaglio[0], 'Y': old_obj.ritaglio[1],
+                              'W': old_obj.ritaglio[2], 'H': old_obj.ritaglio[3],
+                              'PATH': old_obj.path, 'xPOS': int(old_obj.x), 
+                              'yPOS': int(old_obj.y), 'zPOS': int(old_obj.z),
+                              'WIDTH': old_obj.w, 'HEIGHT': old_obj.h, 
+                              'xSPEED': self.tkinterObject.main_frame.xspeed.get(), 
+                              'ySPEED': self.tkinterObject.main_frame.yspeed.get(), 
+                              'FUN': self.tkinterObject.main_frame.combo_fun.get(), 
+                              'TYPE': self.tkinterObject.main_frame.type.get(), 
+                              'PL': self.tkinterObject.main_frame.pl.get(), 
+                              'PV': self.tkinterObject.main_frame.pv.get(), 
+                              'nFRAMES': self.tkinterObject.main_frame.nFrames.get()}]
+                            print(self.tkinterObject.obj[-1])
+                            new_obj = Oggetto(old_obj.path, old_obj.ritaglio, 
+                                              (old_obj.x, old_obj.y), (old_obj.w, 
+                                              old_obj.h), self.tkinterObject.main_frame.type)
+                            self.OBJadd(self.tkinterObject.main_frame.combo_cat.get(), 
+                                        new_obj)
                 
                 # Prendi il dizionario delle chiavi (valcono 1 se pressate)
                 keys = pygame.key.get_pressed()
@@ -434,22 +483,40 @@ class GameInit():
                                 "personaggio"][0].yspeed * self.dt
                 
                 # Collision con i bordi della window
-                if self.obj["personaggio"][0].x > self.window.size[
-                        0] - self.obj["personaggio"][0].w:
-                    self.obj["personaggio"][0].x = self.window.size[0
-                            ] - self.obj["personaggio"][0].w
-                if self.obj["personaggio"][0].x < 0:
-                    self.obj["personaggio"][0].x = 0
-                if self.obj["personaggio"][0].y > self.window.size[1
-                           ] - self.obj["personaggio"][0].h:
-                    self.obj["personaggio"][0].y = self.window.size[1
-                            ] - self.obj["personaggio"][0].h
-                if self.obj["personaggio"][0].y < self.status_bar.size[1]: # < 0:
-                    self.obj["personaggio"][0].y = self.status_bar.size[1] # = 0
+                if not self.builderMode:
+                    if self.obj["personaggio"][0].x > self.window.size[
+                            0] - self.obj["personaggio"][0].w:
+                        self.obj["personaggio"][0].x = self.window.size[0
+                                ] - self.obj["personaggio"][0].w
+                    if self.obj["personaggio"][0].x < 0:
+                        self.obj["personaggio"][0].x = 0
+                    if self.obj["personaggio"][0].y > self.window.size[1
+                               ] - self.obj["personaggio"][0].h:
+                        self.obj["personaggio"][0].y = self.window.size[1
+                                ] - self.obj["personaggio"][0].h
+                    if self.obj["personaggio"][0].y < 0: #self.status_bar.size[1]:
+                        self.obj["personaggio"][0].y = 0 #self.status_bar.size[1]
                 
                 # Avvia il main loop
                 self.mainloop()
-                pygame.display.update()
+                
+                # Aggiorna le finestre
+                if self.tkinterObject != None:
+                    # Se la finestra pygame è stata chiusa
+                    if self.run == False:
+                        # Chiudi anche la finestra tkinter
+                        self.tkinterObject.destroy()
+                        pygame.display.update()
+                    else:
+                        try:
+                            self.tkinterObject.update()
+                        except:
+                            # Il tkinter object è stato distrutto
+                            self.run = False # chiudi anche la finestra pygame
+                        finally:
+                            pygame.display.flip()
+                else:
+                    pygame.display.update()
         
         # Quado esci dal main loop
         pygame.quit()
@@ -518,10 +585,29 @@ class GameInit():
               self.window.pos[1] + self.obj["personaggio"][0].h / 2]
         
         # Sporta la finestra
-        self.window.MoveWindow((-dx[0], -dy[0]), self.screen.size)
+        self.window.MoveWindow((-dx[0], -dy[0]), self.screen.size, 
+                               self.status_bar.size)
         
         # Aggiungi riga di stato in alto
         self.status_bar.updateBar(self)
+        # Aggiungi surface rossa
+        if self.builderMode:
+            if self.obj["personaggio"][0].w - 2 * self.obj["personaggio"][0].pl < 0:
+                w = 0
+            else:
+                w = self.obj["personaggio"][0].w - 2 * self.obj["personaggio"][0].pl
+            if self.obj["personaggio"][0].h - self.obj["personaggio"][0].pv < 0:
+                h = 0
+            else:
+                h = self.obj["personaggio"][0].h - self.obj["personaggio"][0].pv
+            redSurf = pygame.Surface((w, h))
+            redSurf.fill((255, 0, 0))
+            redSurf.set_alpha(128)
+            self.window.surface.blit(redSurf, (self.obj["personaggio"][0].x + 
+                                               self.obj["personaggio"][0].pl, 
+                                               self.obj["personaggio"][0].y + 
+                                               self.obj["personaggio"][0].pv))
+    
         # Rappresenta la finestra nella nuova posizione
         self.window.render(self.screen)
     
@@ -593,7 +679,7 @@ class Window():
         self.pos = list(pos)                 # posizione rispetto a 'Screen'
     
     # Muovi finestra
-    def MoveWindow(self, delta_pos, screen_size):
+    def MoveWindow(self, delta_pos, screen_size, status_bar_size):
         '''Modifica la posizione relativa dell'oggetto 'Window' rispetto 
         all'oggetto 'Screen' (che sta fisso). 'screen_size' è una tupla che 
         contiene le dimensioni dell'oggetto 'Screen'.'''
@@ -609,8 +695,8 @@ class Window():
         # Fai i controlli della posizione della finestra:
         for i in [0, 1]: # -> 0 = X; 1 = Y
             # X/Y > 0
-            if self.pos[i] > 0:
-                self.pos[i] = 0
+            if self.pos[i] > i * status_bar_size[1]:  # self.pos[i] > 0
+                self.pos[i] = i * status_bar_size[1]  # self.pos[i] = 0
             # X/Y < di tot
             if self.pos[i] < screen_size[i] - self.size[i]:
                 self.pos[i] = screen_size[i] - self.size[i]
@@ -691,9 +777,10 @@ class Personaggio():
     'GameInit' con la funzione 'GameInit.OBJadd()'. Il personaggio viene 
     rappresentato sullo schermo se '.status' = True (opzione di default).'''
     def __init__(self, path, ritaglio, pos, size, speed, pl = 20, 
-                 pv = 40):
+                 pv = 40, tipo = ''):
         # Inizializza tutti gli attributi dell'oggetto 'Personaggio'
         self.status = True        # True = rappresenta in window
+        self.type = tipo          # tipo di personaggio
         self.coins = 0            # Numero di monete raccolte
         self.path = path          # path della sprite
         self.chrono = 0           # conta il numero di loop trascorsi
@@ -706,6 +793,10 @@ class Personaggio():
         self.h = size[1]          # altezza
         self.x = pos[0]           # posizione x in window
         self.y = pos[1]           # posizione y in window
+        if len(pos) > 2:
+            self.z = pos[2]       # posizione in z
+        else:
+            self.z = 0
         self.xchange = 0          # spostamento lungo x (moltiplica con xspeed)
         self.ychange = 0          # spostamento lungo y (moltiplica con yspeed)
         self.xspeed = speed[0]    # velocità lungo x
@@ -745,9 +836,22 @@ class Personaggio():
         '''Renderizza il 'Personaggio' in una 'Surface'.'''
         surf.blit(self.image, (self.x, self.y))
     
+    def resize(self, w = None, h = None):
+        '''Ridimensiona '.w' e '.h' modificando le surface associate.'''
+        if w == None:
+            w = self.w
+        if h == None:
+            h = self.h
+        fun = self.fun
+        self.__init__(self.path, self.ritaglio, (self.x, self.y), (w, h), 
+                      (self.xspeed, self.yspeed), pl = self.pl, pv = self.pv, 
+                      tipo = self.type)
+        self.fun = fun
+    
     def __str__(self):
         a = ["<class 'GameToolKit.Personaggio'>:\r\n\r\n" + 
              ".status       -> logical: {}\r\n".format(self.status) + 
+             ".type         -> {}: {}\r\n".format(type(self.type), self.type) + 
              ".chrono       -> {}: {}\r\n".format(type(self.chrono), self.chrono) + 
              ".fun          -> funzione\r\n" + 
              ".image        -> pygame.Surface\r\n" + 
@@ -765,6 +869,7 @@ class Personaggio():
              "    [3] h -> {}\r\n".format(self.ritaglio[3]) + 
              ".x            -> {}: {}\r\n".format(type(self.x), str(self.x)) + 
              ".y            -> {}: {}\r\n".format(type(self.y), str(self.y)) + 
+             ".z            -> {}: {}\r\n".format(type(self.z), str(self.z)) + 
              ".w            -> {}: {}\r\n".format(type(self.w), str(self.w)) + 
              ".h            -> {}: {}\r\n".format(type(self.h), str(self.h)) + 
              ".xchange      -> {}: {}\r\n".format(type(self.xchange), 
@@ -788,7 +893,7 @@ class Oggetto():
     'GameInit.OBJadd()'. L'oggetto sarà rappresentato nello schermo se avrà 
     l'attributo '.status' = True (opzione di default).'''
     def __init__(self, path, ritaglio, pos, size, tipo, status = True, pl = 0, 
-                 pv = 0, nFrames = 1):
+                 pv = 0, nFrames = 1, z = 0):
         # Inizializza tutti gli attributi dell'oggetto 'Oggetto'
         self.status = status       # True = rappresenta in window
         self.collided = False      # True = l'oggetto è stato colpito
@@ -803,6 +908,10 @@ class Oggetto():
         self.h = size[1]           # altezza
         self.x = pos[0]            # posizione x in window
         self.y = pos[1]            # posizione y in window
+        if len(pos) > 2:
+            self.z = pos[2]        # posizione in z
+        else:
+            self.z = 0
         self.image_list = []       # contiene la lista dei frame dell'oggetto
         
         # Crea l'immagine che viene rappresentata nalla window
@@ -857,6 +966,7 @@ class Oggetto():
              "        [3] h -> {}\r\n".format(self.ritaglio[3]) + 
              "    .x          -> {}: {}\r\n".format(type(self.x), str(self.x)) + 
              "    .y          -> {}: {}\r\n".format(type(self.y), str(self.y)) + 
+             "    .z          -> {}: {}\r\n".format(type(self.z), str(self.z)) + 
              "    .w          -> {}: {}\r\n".format(type(self.w), str(self.w)) + 
              "    .h          -> {}: {}\r\n".format(type(self.h), str(self.h)) + 
              "    .pl         -> {}: {}\r\n".format(type(self.pl), str(self.pl)) + 

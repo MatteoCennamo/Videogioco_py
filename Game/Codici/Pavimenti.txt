@@ -1,0 +1,52 @@
+ID	PATH	xPOS	yPOS	WIDTH	HEIGHT	NOTE
+0	./Sprites/Pianure.png	0	0	32	32	# Piastrella con erba (1)
+1	./Sprites/Pianure.png	32	0	32	32	# Piastrella con erba (2)
+2	./Sprites/Pianure.png	64	0	32	32	# Piastrella con erba (3)
+3	./Sprites/Pianure.png	96	0	32	32	# Piastrella con erba (4)
+4	./Sprites/Pianure.png	128	0	32	32	# Piastrella con erba (5)
+5	./Sprites/Pianure.png	160	0	32	32	# Piastrella con erba (6)
+6	./Sprites/Pianure.png	192	0	32	32	# Piastrella con erba (7)
+7	./Sprites/Pianure.png	224	0	32	32	# Piastrella con erba tutta verde
+8	./Sprites/Pianure.png	0	32	32	32	# Strada curva destra-basso
+9	./Sprites/Pianure.png	32	32	32	32	# Strada curva sinistra-basso
+10	./Sprites/Pianure.png	0	64	32	32	# Strada curva destra-alto
+11	./Sprites/Pianure.png	32	64	32	32	# Strada curva sinistra-alto
+12	./Sprites/Pianure.png	64	32	32	32	# Strada dritta alto
+13	./Sprites/Pianure.png	64	64	32	32	# Strada dritta basso
+14	./Sprites/Pianure.png	96	96	32	32	# Strada dritta destra
+15	./Sprites/Pianure.png	128	96	32	32	# Strada dritta sinistra
+16	./Sprites/Pianure.png	96	32	32	32	# Strada incrocio sinistra-alto
+17	./Sprites/Pianure.png	128	32	32	32	# Strada incrocio destra-alto
+18	./Sprites/Pianure.png	96	64	32	32	# Strada incrocio sinistra-basso
+19	./Sprites/Pianure.png	128	64	32	32	# Strada incrocio destra-basso
+20	./Sprites/Pianure.png	192	64	32	32	# Mare
+21	./Sprites/Pianure.png	160	32	32	32	# Mare con terra sinistra-alto
+22	./Sprites/Pianure.png	192	32	32	32	# Mare con terra alto
+23	./Sprites/Pianure.png	224	32	32	32	# Mare con terra destra-alto
+24	./Sprites/Pianure.png	160	64	32	32	# Mare con terra sinistra
+25	./Sprites/Pianure.png	224	64	32	32	# Mare con terra destra
+26	./Sprites/Pianure.png	160	96	32	32	# Mare con terra sinistra-basso
+27	./Sprites/Pianure.png	192	96	32	32	# Mare con terra basso
+28	./Sprites/Pianure.png	224	96	32	32	# Mare con terra destra-basso
+29	./Sprites/Pianure.png	0	96	32	32	# Mare con punta di terra sinistra-alto
+30	./Sprites/Pianure.png	32	96	32	32	# Mare con punta di terra destra-alto
+31	./Sprites/Pianure.png	0	128	32	32	# Mare con punta di terra sinistra-basso
+32	./Sprites/Pianure.png	32	128	32	32	# Mare con punta di terra destra-basso
+33	./Sprites/Pianure.png	64	128	32	32	# Ponte verticale (1,1)
+34	./Sprites/Pianure.png	96	128	32	32	# Ponte verticale (1,2)
+35	./Sprites/Pianure.png	128	128	32	32	# Ponte verticale (1,3)
+36	./Sprites/Pianure.png	64	160	32	32	# Ponte verticale (2,1)
+37	./Sprites/Pianure.png	96	160	32	32	# Ponte verticale (2,2)
+38	./Sprites/Pianure.png	128	160	32	32	# Ponte verticale (2,3)
+39	./Sprites/Pianure.png	64	192	32	32	# Ponte verticale (3,1)
+40	./Sprites/Pianure.png	96	192	32	32	# Ponte verticale (3,2)
+41	./Sprites/Pianure.png	128	192	32	32	# Ponte verticale (3,3)
+42	./Sprites/Pianure.png	160	128	32	32	# Ponte orizzontale (1,1)
+43	./Sprites/Pianure.png	192	128	32	32	# Ponte orizzontale (1,2)
+44	./Sprites/Pianure.png	224	128	32	32	# Ponte orizzontale (1,3)
+45	./Sprites/Pianure.png	160	160	32	32	# Ponte orizzontale (2,1)
+46	./Sprites/Pianure.png	192	160	32	32	# Ponte orizzontale (2,2)
+47	./Sprites/Pianure.png	224	160	32	32	# Ponte orizzontale (2,3)
+48	./Sprites/Pianure.png	160	192	32	32	# Ponte orizzontale (3,1)
+49	./Sprites/Pianure.png	192	192	32	32	# Ponte orizzontale (3,2)
+50	./Sprites/Pianure.png	224	192	32	32	# Ponte orizzontale (3,3)

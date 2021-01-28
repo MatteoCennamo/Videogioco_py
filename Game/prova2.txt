@@ -1,0 +1,26 @@
+CLASS	CAT	X	Y	W	H	PATH	xPOS	yPOS	zPOS	WIDTH	HEIGHT	xSPEED	ySPEED	FUN	TYPE	PL	PV	nFRAMES
+1000	1000	0	-182.0
+gtk.Oggetto	pavimento	224	0.0	32	32	./Sprites/Pianure.png	0.0	0.0	0.0	1000	1000	0.1	0.1	objf._Void	nan	0.0	0.0	1
+gtk.Oggetto	pavimento	192	64.0	32	32	./Sprites/Pianure.png	0.0	0.0	0.0	100	100	0.1	0.1	objf._Void	nan	0.0	0.0	1
+gtk.Oggetto	pavimento	192	64.0	32	32	./Sprites/Pianure.png	100.0	0.0	0.0	100	100	0.1	0.1	objf._Void	nan	0.0	0.0	1
+gtk.Oggetto	pavimento	192	64.0	32	32	./Sprites/Pianure.png	0.0	100.0	0.0	100	100	0.1	0.1	objf._Void	nan	0.0	0.0	1
+gtk.Oggetto	pavimento	192	64.0	32	32	./Sprites/Pianure.png	100.0	100.0	0.0	100	100	0.1	0.1	objf._Void	nan	0.0	0.0	1
+gtk.Oggetto	pavimento	224	64.0	32	32	./Sprites/Pianure.png	200.0	0.0	0.0	100	100	0.1	0.1	objf.collinionObstacles	nan	0.0	0.0	1
+gtk.Oggetto	pavimento	224	64.0	32	32	./Sprites/Pianure.png	200.0	100.0	0.0	100	100	0.1	0.1	objf.collinionObstacles	nan	0.0	0.0	1
+gtk.Oggetto	pavimento	224	96.0	32	32	./Sprites/Pianure.png	200.0	200.0	0.0	100	100	0.1	0.1	objf.collinionObstacles	nan	0.0	0.0	1
+gtk.Oggetto	pavimento	192	96.0	32	32	./Sprites/Pianure.png	100.0	200.0	0.0	100	100	0.1	0.1	objf.collinionObstacles	nan	0.0	0.0	1
+gtk.Oggetto	pavimento	32	128.0	32	32	./Sprites/Pianure.png	0.0	200.0	0.0	100	100	0.1	0.1	objf.collinionObstacles	nan	0.0	0.0	1
+gtk.Oggetto	ostacolo	4	0	24	32	./Sprites/Alberi.png	139	313	0	100	110	0.1	0.1	objf.collinionObstacles	albero	20	60	1
+gtk.Oggetto	pavimento	224	96	32	32	./Sprites/Pianure.png	0	300	0	100	100	0.1	0.1	objf.collinionObstacles		0	0	1
+gtk.Oggetto	ostacolo	4	0	24	32	./Sprites/Alberi.png	191	296	0	100	110	0.1	0.1	objf.collinionObstacles		20	60	1
+gtk.Oggetto	ostacolo	4	0	24	32	./Sprites/Alberi.png	248	394	0	100	110	0.1	0.1	objf.collinionObstacles		20	60	1
+gtk.Oggetto	ostacolo	96	0	32	32	./Sprites/Alberi.png	542	100	0	120	120	0.1	0.1	objf.collinionObstacles		20	60	1
+gtk.Oggetto	ostacolo	2	1	34	34	./Sprites/Rocce.png	434	-44	0	120	120	0.1	0.1	objf.collinionObstacles		5	60	1
+gtk.Oggetto	ostacolo	2	1	34	34	./Sprites/Rocce.png	358	-60	0	120	120	0.1	0.1	objf.collinionObstacles		5	60	1
+gtk.Oggetto	ostacolo	2	1	34	34	./Sprites/Rocce.png	281	-82	0	120	120	0.1	0.1	objf.collinionObstacles		5	60	1
+gtk.Oggetto	ostacolo	2	1	34	34	./Sprites/Rocce.png	519	-82	0	120	120	0.1	0.1	objf.collinionObstacles		5	60	1
+gtk.Oggetto	ostacolo	111	15	18	17	./Sprites/Rocce.png	473	262	0	50	50	0.1	0.1	objf.collinionObstacles		5	15	1
+gtk.Oggetto	ostacolo	111	15	18	17	./Sprites/Rocce.png	530	328	0	50	50	0.1	0.1	objf.collinionObstacles		5	15	1
+gtk.Oggetto	ostacolo	160	16	16	16	./Sprites/Alberi.png	463	430	0	50	50	0.1	0.1	objf.collinionObstacles		5	15	1
+gtk.Oggetto	ostacolo	160	16	16	16	./Sprites/Alberi.png	515	430	0	50	50	0.1	0.1	objf.collinionObstacles		5	15	1
+gtk.Oggetto	ostacolo	160	16	16	16	./Sprites/Alberi.png	550	457	0	50	50	0.1	0.1	objf.collinionObstacles		5	15	1
