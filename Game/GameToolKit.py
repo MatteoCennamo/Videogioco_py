@@ -72,6 +72,7 @@ INDICE:
 import pygame                # Pacchetto standard per videogame in Python
 import pygame.freetype       # Per il font delle scritte
 import OBJfunctions as objf  # Per le funzioni degli obj e il Menu
+import GameDecorators as GD  # Per i decoratori del gioco
 import sys                   # Per lavorare con i moduli e pacchetti
 #from itertools import chain  # Per calcoli iterativi su dizionari e liste
 
@@ -114,8 +115,8 @@ def _Void(root = None, obj = None):
 # Collision detection
 def collisionDetection(root, collider, collided):
     '''Stabilisce se 'collider' ha colliso con 'collided'. 'root' deve essere
-    un oggetto 'GameInit', 'collider' e 'collided' devono essere oggetti 'Presonaggio'
-    o 'Oggetto'. Casi possibili di 'out':
+    un oggetto 'GameInit', 'collider' e 'collided' devono essere oggetti 
+    'Presonaggio' o 'Oggetto'. Casi possibili di 'out':
         -> "":   non c'è stata collisione
         -> "1":  collisione da destra
         -> "2":  collisione da sinistra
@@ -199,15 +200,15 @@ def truncString2List(s, limit):
         list_txt += handleLimit(i, limit)
     return [s[1:] for s in list_txt if len(s) > 0]
 
-def questYesNo(root, domanda, ans1 = 'No', ans2 = 'Sì', truncQuest = 100, 
+def multiQuest(root, domanda, *args, truncQuest = 100, 
                truncAns = 100, QuestBoxSize = None, AnsBoxSize = (94, 56), 
                QuestParams = None, AnsParams = None):
     '''Crea una barra dove viene rappresentata la 'domanda'. Si può rispondere 
-    'sì' o 'no' alla domanda. Restituisce 0 se è stato risposto 'no', 1 se la 
-    risposta è 'sì'. 'domanda' è una stringa (puoi andare a capo con '\n'). 
+    'sì' o 'no' alla domanda (default). Restituisce 0 se è stato risposto 'no', 
+    1 se la risposta è 'sì' e così via se ci sono altre risposte. 'domanda' è 
+    una stringa (puoi andare a capo con '\n'). 
     'truncQuest' è il limite di caratteri di 'domnda' prima di andare a capo. 
-    'truncAns' è il numero di caratteri di 'ans1' e 'ans2' prima di andare a 
-    capo. 
+    'truncAns' è il numero di caratteri di 'args'. 
     'QuestBoxSize' è la tupla che contiene le dimensioni della finestra che 
     contiene la domada (di default, larghezza pari a quella dello schermo e una 
     altezza pari a 1/6 di quella dello schermo).
@@ -215,7 +216,7 @@ def questYesNo(root, domanda, ans1 = 'No', ans2 = 'Sì', truncQuest = 100,
     contiene le risposte. 
     'QuestParams' è un dizionario che contiene i parametri per il testo della 
     domanda, mentre 'AnsParams' è quello per la risposta. I parametri che possono 
-    essere immessi sono quelli di dell'oggetto 'ResponceBox'.'''
+    essere immessi sono quelli di dell'oggetto 'GameToolKit.ResponceBox'.'''
     if QuestParams == None:
         QuestParams = {}
     if AnsParams == None:
@@ -240,13 +241,20 @@ def questYesNo(root, domanda, ans1 = 'No', ans2 = 'Sì', truncQuest = 100,
         if k not in AnsParams:
             AnsParams[k] = v
     
-    list_txt = truncString2List(domanda, truncQuest)
-    surf = ResponceBox((surf_x, surf_y), list_txt, **QuestParams)
+    surf = ResponceBox((surf_x, surf_y), truncString2List(domanda, truncQuest), 
+                       **QuestParams)
     
     # Crea il box che contiene le risposte
-    ansBox = ResponceBox(AnsBoxSize, truncString2List(ans1, truncAns), 
-                             truncString2List(ans2, truncAns), **AnsParams)
-    
+    if len(args) == 0:
+        args = ['No', 'Sì']
+    txts = []
+    for arg in args:
+        if isinstance(arg, str):
+            txts.append(truncString2List(arg, truncAns))
+        else:
+            txts.append(arg)
+    ansBox = ResponceBox(AnsBoxSize, *txts, **AnsParams)
+        
     # Entra nel loop
     while True:
         # Scansiono gli input dello user
@@ -257,10 +265,16 @@ def questYesNo(root, domanda, ans1 = 'No', ans2 = 'Sì', truncQuest = 100,
                 # Pigia pulsante a destra o sinistra
                 if e.key == pygame.K_RIGHT:
                     # Modifica il cursore e il valore di ritorno
-                    ansBox.cursorMove(1)
+                    ansBox.cursorMove((1, 0))
                 if e.key == pygame.K_LEFT:
                     # Modifica il cursore e il valore di ritorno
-                    ansBox.cursorMove(-1)
+                    ansBox.cursorMove((-1, 0))
+                if e.key == pygame.K_DOWN:
+                    # Modifica il cursore e il valore di ritorno
+                    ansBox.cursorMove((0, 1))
+                if e.key == pygame.K_UP:
+                    # Modifica il cursore e il valore di ritorno
+                    ansBox.cursorMove((0, -1))
                 
                 # Se premi 'Invio'
                 if e.key == pygame.K_RETURN:
@@ -278,9 +292,8 @@ def questYesNo(root, domanda, ans1 = 'No', ans2 = 'Sì', truncQuest = 100,
                                         + root.screen.size[1] - surf_y + 1))
         # Rappresenta la surface con il box delle risposte nello schermo
         ansBox.render(root.window.surface, (-root.window.pos[0] + root.screen.size[0] \
-                                            - ansBox.size[0] - 10, -root.window.pos[1] \
-                                            + root.screen.size[1] - surf_y - \
-                                            ansBox.size[1] - 10))
+                      - ansBox.size[0] - 10, -root.window.pos[1] + root.screen.size[1] \
+                      - surf_y - ansBox.size[1] - 10))
         root.screen.set_mode.blit(root.window.surface, root.window.pos)
         pygame.display.update()
 
@@ -1031,20 +1044,31 @@ class GameString():
 11) CLASSE RESPONCEBOX
 '''
 class ResponceBox():
-    '''Crea una finestra che contiene a sinistra la risposta 1 ('ans1') e a 
-    destra la risposta 2 ('ans2'). Il puntatore può muoversi da 'ans1' (quando 
-    '.current' = 0) a 'ans2' (quando '.current' = 1). 'ans1' e 'ans2' devono 
-    essere delle liste del tipo di quelle create con 'OBJfunctions.truncString2List'.
-    'size' è la dimensione totale del box. Se 'ans2' non viene dato, crea un 
-    unico box. 'size' è una tupla che contiene la dimensione del box (x, y).
-    'bg' è il colore di background (di default, bianco).'''
+    '''Crea una finestra che contiene una sequenza di risposte. Il puntatore 
+    può muoversi dalla prima risposta (quando '.current' = 0) alla seconda 
+    (quando '.current' = 1), e così via. Gli elementi di 'args' devono essere 
+    delle liste del tipo di quelle create con 'OBJfunctions.truncString2List', 
+    che contengono stringhe, oppure oggetti GameToolKit.Personaggio, 
+    GameToolkit.Oggetto o pygame.Surface.
+    'size' è una tupla che contiene la dimensione del box (x, y).
+    'bg' è il colore di background (di default, bianco).
+    'textcolor' è una tupla di interi da 0 a 255 che rappresenta il colore (RBG) 
+    del testo.
+    'cursor' = True se si vuole rappresentare il cursore sul testo.
+    'fontsize' è un intero che rappresenta la dimansione del font del testo. 
+    'fontname' è il nome del font (vedi pygame.freetype.SysFont).
+    'padx' e 'pady' sono distanza (in pixel) del testo dai bordi del box.
+    'edgeWidth' è lo spessore in pixel della cornice del box.
+    'inline' è l'interlinea da lasciare tra una riga di testo e un'altra (di 
+    default, viene calcolata del 'fontsize').
+    'disposition' indica se le celle di testo devono essere disposte verticalmente 
+    (default, 'v'), orizzontalmente ('h') o a matrice ('nxm') [vedi '.dispose'].'''
     def __init__(self, size, *args, current = 0, bg = (255, 255, 255), 
                  textcolor = (0, 0, 0), cursor = True, fontsize = 16, 
                  fontname = 'Comic Sans MS', padx = 5, pady = 5, edgeWidth = 5, 
-                 inline = None):
-        self.ans = args             # colonne di scritte
-        self.n_ans = len(self.ans)  # numero di risposte
-        self.size = size            # dimensioni del box
+                 inline = None, disposition = 'vertical'):
+        self.__ans = args           # lista delle celle di testo
+        self.__size = size            # dimensioni del box
         self.current = current      # valore scelto
         self.bg = bg                # colore di background
         self.textcolor = textcolor  # colore del testo
@@ -1056,86 +1080,193 @@ class ResponceBox():
         self.inline = inline        # interlinea
         self.padx = padx            # spaziatura da sinistra
         self.pady = pady            # spaziatura dall'alto
-        self.cursor = cursor        # 'True' se il cursore viene rappresentato
-        # Dimmensioni del cursore
-        self.cursor_size = ((self.size[0] - 2 * edgeWidth) / self.n_ans, 
-                            self.size[1] - 2 * edgeWidth)
-        # Posizione del cursore nella box
-        self.cursor_pos = (edgeWidth + self.current * self.cursor_size[0], edgeWidth)
+        self.__cursor = cursor      # 'True' se il cursore viene rappresentato
+        self.__disp = disposition   # disposizione delle celle di testo
+        
         # Surface del cursore
-        self.cursor_surface = pygame.Surface(self.cursor_size)
-        
+        self.cursor_surface = self.updateCursor()
         # Crea la surface principale del box
+        self.surface = self.updateSurface()
+        # Disponi le celle di testo
+        self.dispose()
+    
+    @property
+    def ans(self):
+        '''Lista dove ogni elemento è una lista che contiene i testi delle celle.'''
+        return self.__ans
+    @ans.setter
+    def ans(self, new):
+        self.__ans = new
+        self.updateAll()
+    
+    @property
+    def size(self):
+        '''Dimensioni della finestra (x, y).'''
+        return self.__size
+    @size.setter
+    def size(self, new):
+        self.__size = new
+        self.updateAll()
+    
+    @property
+    def disp(self):
+        '''Disposizione delle caselle di testo ('vertical', 'horizontal' or 'nxm').'''
+        return self.__disp
+    @disp.setter
+    def disp(self, new):
+        self.__disp = new
+        self.updateAll()
+    
+    @property
+    def cursor(self):
+        '''Logical che vale True se il cursore deve essere rappresentato, altrimenti 
+        vale False.'''
+        return self.__cursor
+    @cursor.setter
+    def cursor(self, logic):
+        self.__cursor = True if logic else False
+        self.updateCursor()
+    
+    @property
+    def n_ans(self):
+        '''Numero di risposte.'''
+        return len(self.ans)
+    
+    @property
+    def cellSize(self):
+        '''Prende le dimensioni della singla cella di testo. Questo è anche la 
+        dimensione del cursore.'''
+        x, y = self.cellNumber
+        return ((self.size[0] - 2 * (self.edgeWidth)) / x,     # width
+                    (self.size[1] - 2 * (self.edgeWidth)) / y) # height
+    
+    @property
+    def cellNumber(self):
+        '''Restituisce una tupla con il numero di celle ti testo (x, y).'''
+        if self.disp in ('h', 'horizontal'):
+            x = self.n_ans
+            y = 1
+        elif self.disp in ('v', 'vertical'):
+            x = 1
+            y = self.n_ans
+        else:
+            x, y = self.disp.split('x')
+        return int(x), int(y)
+    
+    def updateSurface(self):
+        '''Aggiorna la surface se vengono apportate modifiche ai testi o alla 
+        disposizione.'''
         self.surface = pygame.Surface(self.size)
-        self.surface.fill(self.bg, rect = (edgeWidth, edgeWidth, self.size[0] - 
-                                           2 * edgeWidth, self.size[1] - 2 * edgeWidth))
-        
-        # Aggiungi ans
-        idx_ans = 0    # indice in 'self.ans'
-        for a in self.ans:
-            idx = 0
-            # Crea il testo
-            for t in a:
-                txt = GameString(t, pos = [edgeWidth + padx * (idx_ans + 1) + idx_ans * (
-                        self.size[0] - 2 * (edgeWidth + padx)) / self.n_ans, edgeWidth + \
-            pady + idx * self.inline], bg = self.bg, textcolor = self.textcolor, \
-            fontsize = fontsize, fontname = fontname)
-                txt.render(self.surface)
-                idx += 1
-            idx_ans += 1
-        
+        self.surface.fill(self.bg, rect = (self.edgeWidth, self.edgeWidth, \
+             self.size[0] - 2 * self.edgeWidth, self.size[1] - 2 * self.edgeWidth))
+        self.dispose()
+        return self.surface
+    
+    def updateCursor(self):
+        '''Aggiorna la surface del cursore se il numero di celle o la loro 
+        dimensione viene modificata.'''
+        # Surface del cursore
+        self.cursor_surface = pygame.Surface(self.cellSize)
         # Crea trasparenza del cursore
         if self.cursor:
             self.cursor_surface.set_alpha(100)
         else:
             self.cursor_surface.set_alpha(0) # Trasparente
+        return self.cursor_surface
+    
+    def updateAll(self):
+        '''Aggiorna la sia la surface che il cursore.'''
+        self.updateSurface()
+        self.updateCursor()
+    
+    def dispose(self):
+        '''Imposta la disposizione delle celle di testo e li renderizza nella 
+        surface. I valori di 'self.disp' concessi sono: 
+            vertical | v   -> disposizione verticale (default)
+            horizontal | h -> disposizione orizzontale
+            nxm            -> n: numero di righe; m: numero di colonne
+        NOTA: prende il valore da 'self.disp'.'''
+        # Numero di celle di testo in x e in y
+        x, y = self.cellNumber
+        idx_ans = 0  # indice in 'self.ans'
+        for i in range(y):      # colonne della matrice di celle di testo
+            for j in range(x):  # righe della matrice di celle di testo
+                if idx_ans < self.n_ans:
+                    # Scrivi linea per linea
+                    for line, t in enumerate(self.ans[idx_ans]):
+                        if isinstance(t, str):
+                            txt = GameString(t, pos = [self.edgeWidth + self.padx + j * \
+                                    self.cellSize[0], self.edgeWidth + self.pady + i * \
+                                    self.cellSize[1] + line * self.inline], bg = self.bg, \
+                                    textcolor = self.textcolor, fontsize = self.fontsize, \
+                                    fontname = self.fontname)
+                            txt.render(self.surface)
+                        elif isinstance(t, (Personaggio, Oggetto)):
+                            self.surface.blit(t.image, self.cursor_pos)
+                        elif isinstance(t, pygame.Surface):
+                            self.surface.blit(t, self.cursor_pos)
+                idx_ans += 1 # vai alla prossima cella di testo
     
     def render(self, surf, pos):
         '''Renderizza il box nella 'pygame.Surface' ('surf') nella posizione in 
         'pos' (x, y).'''
         # Renderizza la surface
         surf.blit(self.surface, pos)
-        
         # Renderizza il cursore
         surf.blit(self.cursor_surface, [pos[0] + self.cursor_pos[0], pos[1] + 
                                 self.cursor_pos[1]])
     
     def cursorMove(self, direction):
         '''Modifica 'self.current' e la posizione del cursore a seconda del valore 
-        di 'direction' (è un intero che indica di quanto vai avanti o indietro).'''
-        self.current += direction
-        self.current %= self.n_ans
-        
-        # Modifica la posizione del cursore
-        self.cursor_pos = (self.edgeWidth + self.current * self.cursor_size[0], 
-                           self.edgeWidth)
+        di 'direction' (è una tupla che indica di quanto ti sposti in x e y nella 
+        matrice delle celle di testo). Se la disposizione delle celle è verticale 
+        o orizzontale, basta passare un intero.'''
+        # Numero di celle i x e y
+        nX, nY = self.cellNumber
+        # Posizione del cursore
+        posx, posy = (self.current % nX, self.current // nX)
+        if isinstance(direction, (tuple, list)):
+            if direction[0]: # spostamento in x
+                posx += direction[0]
+                posx %= nX
+            if direction[1]: # spostamento in y
+                posy += direction[1]
+                posy %= nY
+        if isinstance(direction, (int, float)):
+            if nX == 1:
+                posx += int(direction)
+                posx %= nX
+            if nY == 1:
+                posy += int(direction)
+                posy %= nY
+        # Aggiusta il valore corrente
+        self.current = posy * nX + posx
+    
+    @property
+    def cursor_pos(self):
+        '''Posizione del cursore nella box (x, y). Calcolato con 'self.current' 
+        e 'self.disp'.'''
+        # Numero di celle i x e y
+        nX,nY = self.cellNumber
+        return (self.edgeWidth + (self.current % nX) * self.cellSize[0], 
+                self.edgeWidth + ((self.current // nX) % nY) * self.cellSize[1])
     
     def configure(self, size = None, current = None, bg = None, 
                  textcolor = None, cursor = None, fontsize = None, 
                  fontname = None, padx = None, pady = None, edgeWidth = None, 
-                 inline = None):
-        if size != None:
-            self.size = size
-        if current != None:
-            self.current = current
-        if bg != None:
-            self.bg = bg
-        if textcolor != None:
-            self.textcolor = textcolor
-        if cursor != None:
-            self.cursor = cursor
-        if fontsize != None:
-            self.fontsize = fontsize
-        if fontname != None:
-            self.fontname = fontname
-        if padx != None:
-            self.padx = padx
-        if pady != None:
-            self.pady = pady
-        if edgeWidth != None:
-            self.edgeWidth = edgeWidth
-        if inline != None:
-            self.inline = inline
+                 inline = None, disposition = None):
+        self.size      = size      if size      != None else self.size
+        self.current   = current   if current   != None else self.current
+        self.bg        = bg        if bg        != None else self.bg
+        self.textcolor = textcolor if textcolor != None else self.textcolor
+        self.cursor    = cursor    if cursor    != None else self.cursor
+        self.fontsize  = fontsize  if fontsize  != None else self.fontsize
+        self.fontname  = fontname  if fontname  != None else self.fontname
+        self.padx      = padx      if padx      != None else self.padx
+        self.pady      = pady      if pady      != None else self.pady
+        self.edgeWidth = edgeWidth if edgeWidth != None else self.edgeWidth
+        self.inline    = inline    if inline    != None else self.inline
+        self.disp      = disposition if disposition != None else self.disp
         # Aggiorna la surface della finestra con i nuovi valori
         self.__init__(self.size, *self.ans, current = self.current, bg = 
                       self.bg, textcolor = self.textcolor, cursor = self.cursor, 

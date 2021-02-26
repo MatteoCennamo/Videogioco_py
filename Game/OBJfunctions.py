@@ -28,7 +28,6 @@ INDICE:
 # Importa i pacchetti
 import pygame
 import GameToolKit as gtk
-import pickle               # Per leggere e scrivere file binari
 
 
 '''
@@ -154,10 +153,10 @@ def collisionAnimationObj(root, obj, frames):
 4) FUNZIONI DEL MENU
 '''
 def menuSalva(root):
-    ans = gtk.questYesNo(root, '''Salvare questo salvataggio?
+    ans = gtk.multiQuest(root, '''Salvare questo salvataggio?
 Sei proprio sicuro?
-Va bene...''', ans1 = "No! Lasciami\nstare!", ans2 = "Sì, fammi\nsalvare!", 
-AnsBoxSize = (300, 84), AnsParams = {'fontsize': 22, 'padx': 10, 'pady': 15})
+Va bene...''', "No! Lasciami\nstare!", "Sì, fammi\nsalvare!", 
+AnsBoxSize = (150, 168), AnsParams = {'fontsize': 22, 'padx': 10, 'pady': 15})
 #    if ans:
 #        # Apri il file 'salvataggio'
 #        with open('salvataggio.pickle', 'wb') as f:
@@ -166,50 +165,11 @@ AnsBoxSize = (300, 84), AnsParams = {'fontsize': 22, 'padx': 10, 'pady': 15})
 
 def menuOggetti(root):
     '''Apre il Menu degli oggetti.'''
-    # Crea la surface che verrà rappresentata
-    surf = pygame.Surface(root.screen.size)
-    
-    # Entra nel loop
-    while True:
-        # Scansiono gli input dello user
-        for e in pygame.event.get():
-            # Quit
-            if e.type == pygame.QUIT:
-                root.run = False
-                return
-            
-            # Pulsante spinto in basso
-            if e.type == pygame.KEYDOWN:
-                # Quit
-                if e.key == pygame.K_q:
-                    root.run = False
-                    return
-                # Ritorna al Menu principale
-                if e.key == pygame.K_m:
-                    return
-#                if e.key == pygame.K_DOWN:
-#                    current += 1
-#                
-#                if e.key == pygame.K_UP:
-#                    current -= 1
-#                # Se premi 'Invio'
-#                if e.key == pygame.K_RETURN:
-#                    if current == nitems - 1:
-#                        return # 'ESCI' (è l'ultimo elemento)
-#                    else:
-#                        # Usa la funzione associata all'elemento selezionato
-#                        root = root.menu.fun[current](root)
-        
-        # Aggiorna il menu
-#        self.window.surface.blit(self.menu.image, (self.menu.x, self.menu.y))
-#        # Aggiorna il puntatore
-#        puntatore.y = self.menu.y + (self.menu.h / nitems) * current - 1
-#        self.window.surface.blit(puntatore.image, (puntatore.x, puntatore.y))
-        # Rappresenta la surface nello schermo
-        root.window.surface.blit(surf, (-root.window.pos[0], -root.window.pos[1]))
-        # Rappresenta la finestra nella nuova posizione
-        root.screen.set_mode.blit(root.window.surface, root.window.pos)
-        pygame.display.update()
+    ans = gtk.multiQuest(root, '''Seleziona un oggetto.''', "No! Lasciami\nstare!", 
+                         "Sì, fammi\nsalvare!", "Più oggetti!", "Un altro", "Ancora!", 
+                         "1\n2\n3?????????", 'Barta', AnsBoxSize = (560, 450), 
+                         AnsParams = {'fontsize': 17, 'padx': 5, 'pady': 10, 
+                                      'disposition': '5x4'})
 
  # Apre il Menu principale
 def menuOpen(root):
