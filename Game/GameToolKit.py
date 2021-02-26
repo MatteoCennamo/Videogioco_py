@@ -72,7 +72,7 @@ INDICE:
 import pygame                # Pacchetto standard per videogame in Python
 import pygame.freetype       # Per il font delle scritte
 import OBJfunctions as objf  # Per le funzioni degli obj e il Menu
-import GameDecorators as GD  # Per i decoratori del gioco
+#import GameDecorators as GD  # Per i decoratori del gioco
 import sys                   # Per lavorare con i moduli e pacchetti
 #from itertools import chain  # Per calcoli iterativi su dizionari e liste
 
@@ -802,8 +802,8 @@ class Personaggio():
                                         # solo dell'immagine in alto a sinistra.
         self.pl = pl              # penetrabilità laterale (in pixel)
         self.pv = pv              # penetrabilità verticale (in pixel)
-        self.w = size[0]          # larghezza
-        self.h = size[1]          # altezza
+        self.__w = size[0]        # larghezza
+        self.__h = size[1]        # altezza
         self.x = pos[0]           # posizione x in window
         self.y = pos[1]           # posizione y in window
         if len(pos) > 2:
@@ -845,12 +845,30 @@ class Personaggio():
         # self.image = pygame.transform.scale(self.image, size)
         self.OLDdirection = "down"
     
-    def render(self, surf):
-        '''Renderizza il 'Personaggio' in una 'Surface'.'''
-        surf.blit(self.image, (self.x, self.y))
+    @property
+    def w(self):
+        '''Largezza dell''oggetto da renderizzare.'''
+        return self.__w
+    @w.setter
+    def w(self, new):
+        '''Mantiene le proporzioni con self.__h.'''
+        prop = self.__h / self.__w
+        self.__w = new
+        self.__h = new * prop
+    
+    @property
+    def h(self):
+        '''Altezza dell''oggetto da renderizzare.'''
+        return self.__h
+    @h.setter
+    def h(self, new):
+        '''Mantiene le proporzioni con self.__w.'''
+        prop = self.__w / self.__h
+        self.__h = new
+        self.__w = new * prop
     
     def resize(self, w = None, h = None):
-        '''Ridimensiona '.w' e '.h' modificando le surface associate.'''
+        '''Modifica le proporzioni della surface.'''
         if w == None:
             w = self.w
         if h == None:
@@ -860,6 +878,12 @@ class Personaggio():
                       (self.xspeed, self.yspeed), pl = self.pl, pv = self.pv, 
                       tipo = self.type)
         self.fun = fun
+    
+    def render(self, surf, pos = None):
+        '''Renderizza il 'Personaggio' in una 'Surface'.'''
+        if pos == None:
+            pos = (self.x, self.y)
+        surf.blit(self.image, pos)
     
     def __str__(self):
         a = ["<class 'GameToolKit.Personaggio'>:\r\n\r\n" + 
@@ -917,8 +941,8 @@ class Oggetto():
         self.ritaglio = ritaglio   # (x, y, w, h) del ritaglio di 'image'
         self.pl = pl               # penetrabilità laterale (in pixel)
         self.pv = pv               # penetrabilità verticale (in pixel)
-        self.w = size[0]           # larghezza
-        self.h = size[1]           # altezza
+        self.__w = size[0]         # larghezza
+        self.__h = size[1]         # altezza
         self.x = pos[0]            # posizione x in window
         self.y = pos[1]            # posizione y in window
         if len(pos) > 2:
@@ -950,16 +974,40 @@ class Oggetto():
             # ritaglia l'immagine
             new_image = imageAll.subsurface(x, y, w, h)
             # ridimrnsiona l'immagine
-            new_image = pygame.transform.scale(new_image, (self.w, self.h))
+            new_image = pygame.transform.scale(new_image, (int(self.w), int(self.h)))
             # aggiorna la lista con la nuova immagine
             self.image_list.append(new_image)
         
         # Prendi l'immagine di default
         return self.image_list[0]  # la prima
     
-    def render(self, surf):
+    @property
+    def w(self):
+        '''Largezza dell''oggetto da renderizzare.'''
+        return self.__w
+    @w.setter
+    def w(self, new):
+        '''Mantiene le proporzioni con self.__h.'''
+        prop = self.__h / self.__w
+        self.__w = new
+        self.__h = new * prop
+    
+    @property
+    def h(self):
+        '''Altezza dell''oggetto da renderizzare.'''
+        return self.__h
+    @h.setter
+    def h(self, new):
+        '''Mantiene le proporzioni con self.__w.'''
+        prop = self.__w / self.__h
+        self.__h = new
+        self.__w = new * prop
+    
+    def render(self, surf, pos = None):
         '''Renderizza l'Oggetto in una 'Surface'.'''
-        surf.blit(self.image, (self.x, self.y))
+        if pos == None:
+            pos = (self.x, self.y)
+        surf.blit(self.image, pos)
     
     def __str__(self):
         a = ["<class 'GameToolKit.Oggetto'>:\r\n\r\n" + 
@@ -1016,10 +1064,19 @@ class GameString():
         '''Modifica la stringa che viene rappresentata nella casella di testo.'''
         self.string = string
     
-    def render(self, surf):
+    def get_size(self):
+        '''Prende le dimensioni del testo quando viene renderizzato. Usa il metodo 
+        '.size' dei pygame.font.Font.'''
+        return self._font.get_rect(self.string)[2:4]
+    
+    def render(self, surf, pos = None, rect = None):
         '''Renderizza la scritta nella Surface 'surf'.'''
+        if pos == None:
+            pos = self.pos
+        if rect == None:
+            rect = pygame.Rect(pos, self.get_size())
         # Renderizza il font in '.master'
-        self._font.render_to(surf, self.pos, self.string, self.textcolor, 
+        self._font.render_to(surf, rect, self.string, self.textcolor, 
                              rotation = self.rotation, bgcolor = self.bg)
     
     def move(self, deltax, deltay):
@@ -1047,9 +1104,20 @@ class ResponceBox():
     '''Crea una finestra che contiene una sequenza di risposte. Il puntatore 
     può muoversi dalla prima risposta (quando '.current' = 0) alla seconda 
     (quando '.current' = 1), e così via. Gli elementi di 'args' devono essere 
-    delle liste del tipo di quelle create con 'OBJfunctions.truncString2List', 
+    delle liste del tipo di quelle create con 'GameToolKit.truncString2List', 
     che contengono stringhe, oppure oggetti GameToolKit.Personaggio, 
-    GameToolkit.Oggetto o pygame.Surface.
+    GameToolkit.Oggetto, GameToolkit.ResponceBox, GameToolKit.GameString o 
+    pygame.Surface.
+    
+    NOTA: gli 'args' vanno passati con la seguente struttura:
+        cella1[riga1[oggetto], riga2[oggetto], ...], cella2[[], [], ...]
+    'GameToolKit.truncString2List' formatta una stringa per trasformarla in cella.
+    Se si vuole passare un'icona con un testo, passare una cosa del tipo:
+        cella[riga[GameToolkit.ResponceBox]]
+    oppure:
+        cella[riga1[GameToolkit.Oggetto], riga2[GameToolKit.GameString]]
+    
+    ALTRI PARAMETRI:
     'size' è una tupla che contiene la dimensione del box (x, y).
     'bg' è il colore di background (di default, bianco).
     'textcolor' è una tupla di interi da 0 a 255 che rappresenta il colore (RBG) 
@@ -1192,19 +1260,25 @@ class ResponceBox():
         for i in range(y):      # colonne della matrice di celle di testo
             for j in range(x):  # righe della matrice di celle di testo
                 if idx_ans < self.n_ans:
+                    cellSurface = pygame.Surface((int(self.cellSize[0] - self.padx), 
+                                                  int(self.cellSize[1] - self.pady)))
+                    cellSurface.fill(self.bg)
+                    cellPos = [self.edgeWidth + self.padx + j * self.cellSize[0], 
+                               self.edgeWidth + self.pady + i * self.cellSize[1]]
                     # Scrivi linea per linea
                     for line, t in enumerate(self.ans[idx_ans]):
+                        pos = [0, line * self.inline]
                         if isinstance(t, str):
-                            txt = GameString(t, pos = [self.edgeWidth + self.padx + j * \
-                                    self.cellSize[0], self.edgeWidth + self.pady + i * \
-                                    self.cellSize[1] + line * self.inline], bg = self.bg, \
+                            txt = GameString(t, pos = pos, bg = self.bg, \
                                     textcolor = self.textcolor, fontsize = self.fontsize, \
                                     fontname = self.fontname)
-                            txt.render(self.surface)
-                        elif isinstance(t, (Personaggio, Oggetto)):
-                            self.surface.blit(t.image, self.cursor_pos)
+                            txt.render(cellSurface)
                         elif isinstance(t, pygame.Surface):
-                            self.surface.blit(t, self.cursor_pos)
+                            cellSurface.blit(t, pos)
+                        elif isinstance(t, (ResponceBox, GameString, Personaggio, 
+                                            Oggetto)):
+                            t.render(cellSurface, pos)
+                    self.surface.blit(cellSurface, cellPos)
                 idx_ans += 1 # vai alla prossima cella di testo
     
     def render(self, surf, pos):

@@ -143,8 +143,8 @@ def collisionAnimationObj(root, obj, frames):
         obj.y = root.obj["personaggio"][0].y - obj.h - 10
         # Ridimensiona l'oggetto
         obj.w += 2
-        obj.h += 2
-        obj.image = pygame.transform.scale(obj.image, (obj.w, obj.h))
+#        obj.h += 2
+        obj.image = pygame.transform.scale(obj.image, (int(obj.w), int(obj.h)))
         # Dopo 'frames' numero di frame, l'animazione termina
         if obj.chrono == frames:
             obj.status = False
@@ -167,9 +167,10 @@ def menuOggetti(root):
     '''Apre il Menu degli oggetti.'''
     ans = gtk.multiQuest(root, '''Seleziona un oggetto.''', "No! Lasciami\nstare!", 
                          "Sì, fammi\nsalvare!", "Più oggetti!", "Un altro", "Ancora!", 
-                         "1\n2\n3?????????", 'Barta', AnsBoxSize = (560, 450), 
+                         "1\n2\n3????????? Ancora", 'Basta', ['Monete:', root.obj['oggetto'][0]], 
+                         AnsBoxSize = (560, 450), #truncAns = 12, 
                          AnsParams = {'fontsize': 17, 'padx': 5, 'pady': 10, 
-                                      'disposition': '5x4'})
+                                      'disposition': '5x4', 'bg': (250, 240, 240)})
 
  # Apre il Menu principale
 def menuOpen(root):
