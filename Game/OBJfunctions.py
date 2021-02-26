@@ -101,9 +101,9 @@ def playerAnimation(root = None, obj = None):
     if obj.xchange == 0 and obj.ychange == 0:  # il personaggio è fermo
         # Prendi l'immagine del personaggio fermo, nella direzione 'OLDdirection'
         obj.image = obj.image_dict[obj.OLDdirection][1]
-        obj.chrono = 0  # resetta il cronometro
+        obj.chrono = 0      # resetta il cronometro
     else:  # il personaggio è in movimento
-        timeframe = 3 # 8   # numero di frame prima del cambio immagine
+        timeframe = 7       # numero di frame prima del cambio immagine
         if obj.ychange < 0: # si sta muovendo verso l'alto
             direction = "up"
         if obj.ychange > 0:

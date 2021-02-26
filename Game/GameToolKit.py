@@ -48,24 +48,31 @@ import sys                   # Per lavorare con i moduli e pacchetti
 '''
 2) COLORI
 '''
-colors = (("BLACK", (0, 0, 0)), 
-          ("GRAY", (128, 128, 128)), 
-          ("WHITE", (255, 255, 255)), 
-          ("RED", (255, 0, 0)), 
-          ("BLUE", (0, 0, 255)), 
-          ("YELLOW", (255, 255, 0)), 
-          ("MAGENTA", (255, 0, 255)), 
-          ("CYAN", (0, 255, 255)), 
-          ("ORANGE", (255, 128, 0)), 
-          ("DARK_ROSE", (255, 0, 128)), 
-          ("LILAC", (200, 100, 160)), 
-          ("ROSE", (255, 90, 90)), 
-          ("SKIN_ROSE", (255, 130, 130)), 
-          ("PURPLE", (160, 0, 255)), 
-          ("SKY_BLUE", (0, 128, 255)))
+# colors = (("BLACK", (0, 0, 0)), ("GRAY", (128, 128, 128)), ("WHITE", (255, 255, 255)), 
+#           ("RED", (255, 0, 0)), ("BLUE", (0, 0, 255)), ("YELLOW", (255, 255, 0)), 
+#           ("MAGENTA", (255, 0, 255)), ("CYAN", (0, 255, 255)), ("ORANGE", (255, 128, 0)), 
+#           ("DARK_ROSE", (255, 0, 128)), ("LILAC", (200, 100, 160)), ("ROSE", (255, 90, 90)), 
+#           ("SKIN_ROSE", (255, 130, 130)), ("PURPLE", (160, 0, 255)), ("SKY_BLUE", (0, 128, 255)))
+#globals()['GREEN'] = (128, 255, 0)
 
-for k, v in colors:
-    globals()[k] = v
+# Possono essere estratti con il comando: GameToolKit.BLACK...
+setattr(sys.modules[__name__], "BLACK", (0, 0, 0))
+setattr(sys.modules[__name__], "GRAY", (128, 128, 128))
+setattr(sys.modules[__name__], "WHITE", (255, 255, 255))
+setattr(sys.modules[__name__], "RED", (255, 0, 0))
+#setattr(sys.modules[__name__], "GREEN", (0, 255, 0))
+setattr(sys.modules[__name__], "BLUE", (0, 0, 255))
+setattr(sys.modules[__name__], "YELLOW", (255, 255, 0))
+setattr(sys.modules[__name__], "MAGENTA", (255, 0, 255))
+setattr(sys.modules[__name__], "CYAN", (0, 255, 255))
+setattr(sys.modules[__name__], "ORANGE", (255, 128, 0))
+setattr(sys.modules[__name__], "DARK_ROSE", (255, 0, 128))
+setattr(sys.modules[__name__], "LILAC", (200, 100, 160))
+setattr(sys.modules[__name__], "ROSE", (255, 90, 90))
+setattr(sys.modules[__name__], "SKIN_ROSE", (255, 130, 130))
+setattr(sys.modules[__name__], "GREEN", (128, 255, 0))
+setattr(sys.modules[__name__], "PURPLE", (160, 0, 255))
+setattr(sys.modules[__name__], "SKY_BLUE", (0, 128, 255))
 
 
 '''
@@ -583,7 +590,7 @@ class GameInit():
             else:
                 h = self.obj["personaggio"][0].h - self.obj["personaggio"][0].pv
             redSurf = pygame.Surface((w, h))
-            redSurf.fill((255, 0, 0))
+            redSurf.fill(sys.modules[__name__].RED)
             redSurf.set_alpha(128)
             self.window.surface.blit(redSurf, (self.obj["personaggio"][0].x + 
                                                self.obj["personaggio"][0].pl, 
