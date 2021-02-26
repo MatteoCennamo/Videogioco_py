@@ -14,55 +14,23 @@ INDICE:
         -> collisionDetection
         -> OBJactivete
         -> truncString2List
-        -> questYesNo
+        -> multiQuest
         
     4) CLASSE GameInit:
-        -> __init__
-        -> MainLoop
-        -> ReLoop
-        -> OBJadd
-        -> updateWindow
-        -> __str__
         
     5) CLASSE Screen:
-        -> __init__
-        -> __str__
         
     6) CLASSE Window:
-        -> __init__
-        -> MoveWindow
-        -> render
-        -> __str__
     
     7) CLASSE StatusBar:
-        -> __init__
-        -> updateBar
-        -> __str__
         
     8) CLASSE Personaggio:
-        -> __init__
-        -> render
-        -> __str__
         
     9) CLASSE Oggetto:
-        -> __init__
-        -> cutImage
-        -> render
-        -> __str__
     
     10) CLASSE GameString:
-        -> __init__
-        -> set_font
-        -> set_string
-        -> render
-        -> move
-        -> __str__
     
     11) CLASSE ResponceBox:
-        -> __init__
-        -> render
-        -> cursorMove
-        -> configure
 
 '''
 
@@ -80,24 +48,24 @@ import sys                   # Per lavorare con i moduli e pacchetti
 '''
 2) COLORI
 '''
-# Possono essere estratti con il comando: GameToolKit.BLACK...
-setattr(sys.modules[__name__], "BLACK", (0, 0, 0))
-setattr(sys.modules[__name__], "GRAY", (128, 128, 128))
-setattr(sys.modules[__name__], "WHITE", (255, 255, 255))
-setattr(sys.modules[__name__], "RED", (255, 0, 0))
-#setattr(sys.modules[__name__], "GREEN", (0, 255, 0))
-setattr(sys.modules[__name__], "BLUE", (0, 0, 255))
-setattr(sys.modules[__name__], "YELLOW", (255, 255, 0))
-setattr(sys.modules[__name__], "MAGENTA", (255, 0, 255))
-setattr(sys.modules[__name__], "CYAN", (0, 255, 255))
-setattr(sys.modules[__name__], "ORANGE", (255, 128, 0))
-setattr(sys.modules[__name__], "DARK_ROSE", (255, 0, 128))
-setattr(sys.modules[__name__], "LILAC", (200, 100, 160))
-setattr(sys.modules[__name__], "ROSE", (255, 90, 90))
-setattr(sys.modules[__name__], "SKIN_ROSE", (255, 130, 130))
-setattr(sys.modules[__name__], "GREEN", (128, 255, 0))
-setattr(sys.modules[__name__], "PURPLE", (160, 0, 255))
-setattr(sys.modules[__name__], "SKY_BLUE", (0, 128, 255))
+colors = (("BLACK", (0, 0, 0)), 
+          ("GRAY", (128, 128, 128)), 
+          ("WHITE", (255, 255, 255)), 
+          ("RED", (255, 0, 0)), 
+          ("BLUE", (0, 0, 255)), 
+          ("YELLOW", (255, 255, 0)), 
+          ("MAGENTA", (255, 0, 255)), 
+          ("CYAN", (0, 255, 255)), 
+          ("ORANGE", (255, 128, 0)), 
+          ("DARK_ROSE", (255, 0, 128)), 
+          ("LILAC", (200, 100, 160)), 
+          ("ROSE", (255, 90, 90)), 
+          ("SKIN_ROSE", (255, 130, 130)), 
+          ("PURPLE", (160, 0, 255)), 
+          ("SKY_BLUE", (0, 128, 255)))
+
+for k, v in colors:
+    globals()[k] = v
 
 
 '''
@@ -398,7 +366,8 @@ class GameInit():
         # Crea il puntatore
         puntatore = Oggetto("./Sprites/Menu.png", (0, 0, 1, 1), (self.obj["menu"][0].x, 
                             self.obj["menu"][0].y), (self.obj["menu"][0].w, int(
-                                    self.obj["menu"][0].h / 4)), "puntatore", status = False)
+                                    self.obj["menu"][0].h / 4)), "puntatore", 
+                                status = False)
         puntatore.image.set_alpha(100)
         # Aggiungi il puntatore del Menu
         self.OBJadd("menu", puntatore, _Void)
@@ -816,7 +785,7 @@ class Personaggio():
         self.yspeed = speed[1]    # velocità lungo y
         
         # Crea l'immagine che viene rappresentata nalla window
-        imageAll = pygame.image.load(path)
+        imageAll = pygame.image.load(path).convert_alpha()
         
         # Inizializza image_list
         self.image_dict = {"down": [], "left": [], "right": [], "up": []}
@@ -961,7 +930,7 @@ class Oggetto():
         '''Ritaglia le immagini per l'animazione di oggetti. Crea una lista di 
         immagini che andranno a comporre l'attributo '.image_list'.'''
         # Crea l'immagine che viene rappresentata nalla window
-        imageAll = pygame.image.load(self.path)
+        imageAll = pygame.image.load(self.path).convert_alpha()
         
         # Inizializza image_list
         self.image_list = []
@@ -1270,8 +1239,8 @@ class ResponceBox():
                         pos = [0, line * self.inline]
                         if isinstance(t, str):
                             txt = GameString(t, pos = pos, bg = self.bg, \
-                                    textcolor = self.textcolor, fontsize = self.fontsize, \
-                                    fontname = self.fontname)
+                                    textcolor = self.textcolor, fontsize = \
+                                    self.fontsize, fontname = self.fontname)
                             txt.render(cellSurface)
                         elif isinstance(t, pygame.Surface):
                             cellSurface.blit(t, pos)
