@@ -450,7 +450,12 @@ class MainFrame(tk.Frame):
             h_temp = 0
         else:
             h_temp = int(self.h.get())
+        if self.z.get() == '':
+            z_temp = 0
+        else:
+            z_temp = int(self.z.get())
         game.obj['personaggio'][0].resize(w = w_temp, h = h_temp)
+        game.obj['personaggio'][0].z = z_temp
         game.obj['personaggio'][0].type = self.type.get()
         # Modifica .image_dict in maniera che tutte le posizioni sono uguali
         for k in ['down', 'left', 'right', 'up']:

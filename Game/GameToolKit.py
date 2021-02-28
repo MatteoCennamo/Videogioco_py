@@ -101,6 +101,8 @@ def collisionDetection(root, collider, collided):
         -> "14": collisione dall'alto a destra
         -> "23": collisione dal basso a sinistra
         -> "24": collisione dall'alto a sinistra'''
+    # xr, yr, wr, hr = collider.get_collision_rect()
+    # xd, yd, wd, hd = collided.get_collision_rect()
     xr = collider.x   # posizione in x del collider
     xd = collided.x   # posizione in x del collided
     yr = collider.y   # posizione in y del collider
@@ -135,6 +137,7 @@ def collisionDetection(root, collider, collided):
         if collider.ychange > 0: # il personaggio viene da sopra
             out = out + "4"      # caso 4
     return out
+    
 
 # Lancia funzioone degli obj e rappresentali in 'Window'
 def OBJactivete(obj, root):
@@ -192,6 +195,10 @@ def multiQuest(root, domanda, *args, truncQuest = 100,
     'QuestParams' è un dizionario che contiene i parametri per il testo della 
     domanda, mentre 'AnsParams' è quello per la risposta. I parametri che possono 
     essere immessi sono quelli di dell'oggetto 'GameToolKit.ResponceBox'.'''
+    # Scostamento dal bordo dello schermo
+    OFFSETX = 10
+    # Scostamento dalla box della domanda
+    OFFSETY = 10
     if QuestParams == None:
         QuestParams = {}
     if AnsParams == None:
@@ -229,7 +236,7 @@ def multiQuest(root, domanda, *args, truncQuest = 100,
         else:
             txts.append(arg)
     ansBox = ResponceBox(AnsBoxSize, *txts, **AnsParams)
-        
+    
     # Entra nel loop
     while True:
         # Scansiono gli input dello user
@@ -250,10 +257,15 @@ def multiQuest(root, domanda, *args, truncQuest = 100,
                 if e.key == pygame.K_UP:
                     # Modifica il cursore e il valore di ritorno
                     ansBox.cursorMove((0, -1))
-                
                 # Se premi 'Invio'
                 if e.key == pygame.K_RETURN:
                     return ansBox.current
+                
+            if e.type == pygame.MOUSEBUTTONDOWN:
+                if e.button == 1: # pulsante sinistro del mouse
+                    ansBox.mousePress((-root.screen.size[0] \
+                  + ansBox.size[0] + OFFSETX + e.pos[0], -root.screen.size[1] \
+                  + surf_y + ansBox.size[1] + OFFSETY + e.pos[1]), e.button)
         
         # Pulisci la surface di 'root.window'
         root.window.surface = pygame.Surface(root.window.size)
@@ -267,8 +279,8 @@ def multiQuest(root, domanda, *args, truncQuest = 100,
                                         + root.screen.size[1] - surf_y + 1))
         # Rappresenta la surface con il box delle risposte nello schermo
         ansBox.render(root.window.surface, (-root.window.pos[0] + root.screen.size[0] \
-                      - ansBox.size[0] - 10, -root.window.pos[1] + root.screen.size[1] \
-                      - surf_y - ansBox.size[1] - 10))
+                      - ansBox.size[0] - OFFSETX, -root.window.pos[1] + \
+                      root.screen.size[1] - surf_y - ansBox.size[1] - OFFSETY))
         root.screen.set_mode.blit(root.window.surface, root.window.pos)
         pygame.display.update()
 
@@ -334,8 +346,7 @@ class GameInit():
         self.screen.set_mode.blit(self.window.surface, self.window.pos)
         
         # Crea la barra di stato
-        self.status_bar = StatusBar([-self.window.pos[0], -self.window.pos[1]], 
-                                    [self.screen.size[0], 25])
+        self.status_bar = StatusBar([self.screen.size[0], 25])
         
         # Crea il menu
         menu = Oggetto("./Sprites/Menu.png", (0, 0, 186, 134), (0, 0), 
@@ -431,7 +442,7 @@ class GameInit():
                               'nFRAMES': self.tkinterObject.main_frame.nFrames.get()}]
                             print(self.tkinterObject.obj[-1])
                             new_obj = Oggetto(old_obj.path, old_obj.ritaglio, 
-                                              (old_obj.x, old_obj.y), (old_obj.w, 
+                                              (old_obj.x, old_obj.y, old_obj.z), (old_obj.w, 
                                               old_obj.h), self.tkinterObject.main_frame.type)
                             self.OBJadd(self.tkinterObject.main_frame.combo_cat.get(), 
                                         new_obj)
@@ -573,12 +584,9 @@ class GameInit():
         dy = [self.obj["personaggio"][0].y - self.screen.size[1] / 2 + 
               self.window.pos[1] + self.obj["personaggio"][0].h / 2]
         
-        # Sporta la finestra
+        # Sposta la finestra
         self.window.MoveWindow((-dx[0], -dy[0]), self.screen.size, 
                                self.status_bar.size)
-        
-        # Aggiungi riga di stato in alto
-        self.status_bar.updateBar(self)
         # Aggiungi surface rossa
         if self.builderMode:
             if self.obj["personaggio"][0].w - 2 * self.obj["personaggio"][0].pl < 0:
@@ -596,9 +604,11 @@ class GameInit():
                                                self.obj["personaggio"][0].pl, 
                                                self.obj["personaggio"][0].y + 
                                                self.obj["personaggio"][0].pv))
-    
         # Rappresenta la finestra nella nuova posizione
         self.window.render(self.screen)
+        # Aggiungi riga di stato in alto
+        self.status_bar.updateBar(self)
+    
     
     # Aggiung oggetti a .obj
     def OBJadd(self, objType, obj, fun = _Void):
@@ -711,7 +721,7 @@ class Window():
 7) CLASSE STATUSBAR
 '''
 class StatusBar():
-    def __init__(self, pos, size):
+    def __init__(self, size, pos = (0, 0)):
         '''Root deve essere un oggetto 'GameInit'. .size[0] dipende dalla 
         dimensione dello schermo 'root.screen.size[0]'. 'BarStatus' viene 
         rappresentato in 'Window.surface' dalla funzione 'GameInit.updateWindow', 
@@ -721,7 +731,7 @@ class StatusBar():
         self.pos = list(pos)        # posizione nella window [X, Y]
         self.size = list(size)      # dimensione della barra
         self.surface = pygame.Surface(size)  # Surface
-        self.string = "Monete: {}"  # cosa viene scritto nella barra
+        self.string = "Monete: %d"  # cosa viene scritto nella barra
         self.bg = (0, 0, 0)         # colore di background (NERO)
         self.text = GameString(     # scritta
                 self.string, pos = [20, 5], bg = self.bg)
@@ -732,16 +742,11 @@ class StatusBar():
         # Pulisci la surface
         self.surface = pygame.Surface(self.size)
         self.surface.fill(self.bg)
-        
-        # Ricalcola la posizione della barra rispetto alla window
-        self.pos = [-root.window.pos[0], -root.window.pos[1]]
-        
         # Reimposta il valore della stringa con il numero di monete prese
-        self.text.set_string(self.string.format(root.obj["personaggio"][0].coins))
+        self.text.set_string(self.string % root.obj["personaggio"][0].coins)
         self.text.render(self.surface)  # renderizza la scritta
-        
         # Rappresenta la barra nella finestra
-        root.window.surface.blit(self.surface, self.pos)
+        root.screen.set_mode.blit(self.surface, self.pos)
     
     def __str__(self):
          a = ["<class 'GameToolKit.StatusBar'>:\r\n" + 
@@ -843,6 +848,17 @@ class Personaggio():
         self.__h = new
         self.__w = new * prop
     
+    def get_render_rect(self):
+        '''Restituisce il pygame.Rect dell'oggetto da renderizzare. Usa invece 
+        il  metodo '.get_collision_rect' per verificare le collisioni.'''
+        return pygame.Rect([self.x, self.y - self.z], [self.w, self.h])
+    
+    def get_collision_rect(self):
+        '''Restituisce il pygame.Rect dell'oggetto per le collisioni. Usa invece 
+        il  metodo '.get_render_rect' per la renderizzazione dell'icona.'''
+        return pygame.Rect([self.x + self.pl, self.y - self.pv], 
+                           [self.w - 2 * self.pl, self.h - self.pv])
+    
     def resize(self, w = None, h = None):
         '''Modifica le proporzioni della surface.'''
         if w == None:
@@ -858,7 +874,7 @@ class Personaggio():
     def render(self, surf, pos = None):
         '''Renderizza il 'Personaggio' in una 'Surface'.'''
         if pos == None:
-            pos = (self.x, self.y)
+            pos = self.get_render_rect()#(self.x, self.y)
         surf.blit(self.image, pos)
     
     def __str__(self):
@@ -967,6 +983,7 @@ class Oggetto():
         prop = self.__h / self.__w
         self.__w = new
         self.__h = new * prop
+        self.updateImages((self.__w, self.__h))
     
     @property
     def h(self):
@@ -978,11 +995,28 @@ class Oggetto():
         prop = self.__w / self.__h
         self.__h = new
         self.__w = new * prop
+        self.updateImages((self.__w, self.__h))
+    
+    def updateImages(self, size):
+        for i in self.image_list:
+            i = pygame.transform.scale(i, (int(self.w), int(self.h)))
+        self.image = pygame.transform.scale(self.image, (int(self.w), int(self.h)))
+    
+    def get_render_rect(self):
+        '''Restituisce il pygame.Rect dell'oggetto da renderizzare. Usa invece 
+        il  metodo '.get_collision_rect' per verificare le collisioni.'''
+        return pygame.Rect([self.x, self.y - self.z], [self.w, self.h])
+    
+    def get_collision_rect(self):
+        '''Restituisce il pygame.Rect dell'oggetto per le collisioni. Usa invece 
+        il  metodo '.get_render_rect' per la renderizzazione dell'icona.'''
+        return pygame.Rect([self.x + self.pl, self.y - self.pv], 
+                           [self.w - 2 * self.pl, self.h - self.pv])
     
     def render(self, surf, pos = None):
         '''Renderizza l'Oggetto in una 'Surface'.'''
         if pos == None:
-            pos = (self.x, self.y)
+            pos = self.get_render_rect()#(self.x, self.y)
         surf.blit(self.image, pos)
     
     def __str__(self):
@@ -1044,6 +1078,10 @@ class GameString():
         '''Prende le dimensioni del testo quando viene renderizzato. Usa il metodo 
         '.size' dei pygame.font.Font.'''
         return self._font.get_rect(self.string)[2:4]
+    
+    def get_rect(self):
+        '''Ricava un oggetto pygame.Rect dal GameString.'''
+        return pygame.Rect(self.get_size, self.pos)
     
     def render(self, surf, pos = None, rect = None):
         '''Renderizza la scritta nella Surface 'surf'.'''
@@ -1113,7 +1151,7 @@ class ResponceBox():
                  inline = None, disposition = 'vertical'):
         self.__ans = args           # lista delle celle di testo
         self.__size = size            # dimensioni del box
-        self.current = current      # valore scelto
+        self.__current = current      # valore scelto
         self.bg = bg                # colore di background
         self.textcolor = textcolor  # colore del testo
         self.fontsize = fontsize    # dimensioni del font
@@ -1170,6 +1208,15 @@ class ResponceBox():
     def cursor(self, logic):
         self.__cursor = True if logic else False
         self.updateCursor()
+    
+    @property
+    def current(self):
+        '''Cella attualmente selezionata.'''
+        return self.__current
+    @current.setter
+    def current(self, new):
+        self.__current = new
+        self.updateAll()
     
     @property
     def n_ans(self):
@@ -1242,18 +1289,19 @@ class ResponceBox():
                     cellPos = [self.edgeWidth + self.padx + j * self.cellSize[0], 
                                self.edgeWidth + self.pady + i * self.cellSize[1]]
                     # Scrivi linea per linea
-                    for line, t in enumerate(self.ans[idx_ans]):
-                        pos = [0, line * self.inline]
-                        if isinstance(t, str):
-                            txt = GameString(t, pos = pos, bg = self.bg, \
-                                    textcolor = self.textcolor, fontsize = \
-                                    self.fontsize, fontname = self.fontname)
-                            txt.render(cellSurface)
-                        elif isinstance(t, pygame.Surface):
-                            cellSurface.blit(t, pos)
-                        elif isinstance(t, (ResponceBox, GameString, Personaggio, 
-                                            Oggetto)):
-                            t.render(cellSurface, pos)
+                    if isinstance(self.ans[idx_ans], list):
+                        for line, t in enumerate(self.ans[idx_ans]):
+                            pos = [0, line * self.inline]
+                            if isinstance(t, str):
+                                txt = GameString(t, pos = pos, bg = self.bg, \
+                                        textcolor = self.textcolor, fontsize = \
+                                        self.fontsize, fontname = self.fontname)
+                                txt.render(cellSurface)
+                    elif isinstance(self.ans[idx_ans], pygame.Surface):
+                        cellSurface.blit(self.ans[idx_ans], [0, 0])
+                    elif isinstance(self.ans[idx_ans], (ResponceBox, GameString, Personaggio, 
+                                        Oggetto)):
+                        self.ans[idx_ans].render(cellSurface, [0, 0])
                     self.surface.blit(cellSurface, cellPos)
                 idx_ans += 1 # vai alla prossima cella di testo
     
@@ -1265,6 +1313,11 @@ class ResponceBox():
         # Renderizza il cursore
         surf.blit(self.cursor_surface, [pos[0] + self.cursor_pos[0], pos[1] + 
                                 self.cursor_pos[1]])
+    
+    def get_rect(self, pos = (0, 0)):
+        '''Restituisce il pygame.Rect. Di default, la posizione viene posta a 
+        (0, 0), ma può essere cambiata con l'argomento 'pos'.'''
+        return pygame.Rect(pos, self.size)
     
     def cursorMove(self, direction):
         '''Modifica 'self.current' e la posizione del cursore a seconda del valore 
@@ -1300,6 +1353,32 @@ class ResponceBox():
         nX,nY = self.cellNumber
         return (self.edgeWidth + (self.current % nX) * self.cellSize[0], 
                 self.edgeWidth + ((self.current // nX) % nY) * self.cellSize[1])
+    
+    def mousePress(self, pos, button):
+        '''Prende come input la posizione relativa del mouse ('pos') e il pulsante 
+        premuto (vedi pygame.MOUSEBUTTONDOWN). Modifica '.current' in base a dove 
+        ho premuto il mouse.'''
+        if button == 1: # pulsante sinistro del mouse
+            nX, nY = self.cellNumber
+            cellW, cellH = self.cellSize
+            # Togli il bordo per rendere i calcoli successivi più facili
+            posx, posy = [pos[0] - self.edgeWidth, pos[1] - self.edgeWidth]
+            if (posx < 0 or posx > cellW * nX) or (posy < 0 or posy > cellH * nY):
+                # Fuori dei bordi, non fare nulla
+                pass
+            else:
+                # Modifica '.current'
+                currentx, currenty = posx // cellW, posy // cellH
+                # Aggiusta il valore corrente
+                self.current = int(currenty * nX + currentx)
+                # Se nella cella selezionata l'oggetto è ResponceBox, lancia il 
+                # mousePress della cella
+                if self.current < len(self.ans):
+                    if isinstance(self.ans[self.current], ResponceBox):
+                        self.ans[self.current].mousePress(\
+                                [posx - cellW * currentx - self.padx, 
+                                 posy - cellH * currenty - self.pady], 1)
+                        self.updateAll()
     
     def configure(self, size = None, current = None, bg = None, 
                  textcolor = None, cursor = None, fontsize = None, 

@@ -35,7 +35,7 @@ root = gtk.GameInit(title = "Prova 1", screen_size = (1000, 600),
 '''
 # Crea oggetto personaggio
 player = gtk.Personaggio("./Sprites/Personaggi_16x16.png", (48, 0, 16, 16), 
-                         (350, 350), (75, 75), (0.2, 0.2), pl = 15, pv = 50)
+                         (910, 840), (75, 75), (0.2, 0.2), pl = 15, pv = 50)
 # Aggiungi il personaggio a 'root'
 root.OBJadd("personaggio", player, objf.playerAnimation)
 

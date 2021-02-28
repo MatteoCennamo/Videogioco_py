@@ -165,12 +165,21 @@ AnsBoxSize = (150, 168), AnsParams = {'fontsize': 22, 'padx': 10, 'pady': 15})
 
 def menuOggetti(root):
     '''Apre il Menu degli oggetti.'''
+    prova = gtk.ResponceBox([100, 50], gtk.truncString2List('prova1', 10), 
+                            gtk.truncString2List('prova2', 10), edgeWidth = 1)
+    prova2 = gtk.ResponceBox([100, 100], *[['line: ', '1'], ['2'], ['3'], ['4']], 
+                             disposition = '2x2', edgeWidth = 1)
+    import copy
+    albero = copy.copy(root.obj['ostacolo'][0])
+    albero.h = 90
     ans = gtk.multiQuest(root, '''Seleziona un oggetto.''', "No! Lasciami\nstare!", 
                          "Sì, fammi\nsalvare!", "Più oggetti!", "Un altro", "Ancora!", 
                          "1\n2\n3????????? Ancora", 'Basta', ['Monete:', root.obj['oggetto'][0]], 
+                         prova, prova2, albero, 
                          AnsBoxSize = (560, 450), #truncAns = 12, 
                          AnsParams = {'fontsize': 17, 'padx': 5, 'pady': 10, 
-                                      'disposition': '5x4', 'bg': (250, 240, 240)})
+                                      'disposition': '5x4', 'bg': (250, 240, 240), 
+                                      'cursor': False})
 
  # Apre il Menu principale
 def menuOpen(root):
