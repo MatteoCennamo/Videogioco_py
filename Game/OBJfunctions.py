@@ -175,7 +175,7 @@ def menuOggetti(root):
     ans = gtk.multiQuest(root, '''Seleziona un oggetto.''', "No! Lasciami\nstare!", 
                          "Sì, fammi\nsalvare!", "Più oggetti!", "Un altro", "Ancora!", 
                          "1\n2\n3????????? Ancora", 'Basta', ['Monete:', root.obj['oggetto'][0]], 
-                         prova, prova2, albero, 
+                         prova, ['Forza:', prova2], albero, 
                          AnsBoxSize = (560, 450), #truncAns = 12, 
                          AnsParams = {'fontsize': 17, 'padx': 5, 'pady': 10, 
                                       'disposition': '5x4', 'bg': (250, 240, 240), 

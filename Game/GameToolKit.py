@@ -1297,6 +1297,11 @@ class ResponceBox():
                                         textcolor = self.textcolor, fontsize = \
                                         self.fontsize, fontname = self.fontname)
                                 txt.render(cellSurface)
+                            elif isinstance(t, pygame.Surface):
+                                cellSurface.blit(t, pos)
+                            elif isinstance(t, (ResponceBox, GameString, Personaggio, 
+                                                Oggetto)):
+                                t.render(cellSurface, pos)
                     elif isinstance(self.ans[idx_ans], pygame.Surface):
                         cellSurface.blit(self.ans[idx_ans], [0, 0])
                     elif isinstance(self.ans[idx_ans], (ResponceBox, GameString, Personaggio, 
@@ -1373,12 +1378,19 @@ class ResponceBox():
                 self.current = int(currenty * nX + currentx)
                 # Se nella cella selezionata l'oggetto è ResponceBox, lancia il 
                 # mousePress della cella
+                
                 if self.current < len(self.ans):
-                    if isinstance(self.ans[self.current], ResponceBox):
-                        self.ans[self.current].mousePress(\
-                                [posx - cellW * currentx - self.padx, 
-                                 posy - cellH * currenty - self.pady], 1)
-                        self.updateAll()
+                    def checkResponceBox(item, numLine):
+                        if isinstance(item, list):
+                            for numLine, i in enumerate(item):
+                                checkResponceBox(i, numLine)
+                        elif isinstance(item, ResponceBox):
+                            item.mousePress(\
+                                    [posx - cellW * currentx - self.padx, 
+                                     posy - cellH * currenty - self.pady - 
+                                     self.inline * numLine], 1)
+                            self.updateAll()
+                    checkResponceBox(self.ans[self.current], 0)
     
     def configure(self, size = None, current = None, bg = None, 
                  textcolor = None, cursor = None, fontsize = None, 
