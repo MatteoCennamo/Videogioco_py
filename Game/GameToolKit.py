@@ -1373,7 +1373,8 @@ class ResponceBox():
                 pass
             else:
                 # Modifica '.current'
-                currentx, currenty = posx // cellW, posy // cellH
+                currentx = min([posx // cellW, nX - 1])
+                currenty = min([posy // cellH, nY - 1])
                 # Aggiusta il valore corrente
                 self.current = int(currenty * nX + currentx)
                 # Se nella cella selezionata l'oggetto è ResponceBox, lancia il 
