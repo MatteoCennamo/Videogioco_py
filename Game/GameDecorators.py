@@ -16,31 +16,39 @@ import pygame
 import time
 import functools
 import GameToolKit as gtk
+import threading
 
 
 '''
 2) PER FUNZIONI
 '''
-def buttonCommand(fun = None, *, button = None, master = None, surf = None, pos = None):
-    '''Stabilisci la ResponceBox principale la sua posizione. Se il pulsante 
-    non ha una ResponceBox principale, passare la posizione del pulsante con 
-    'master_pos' e in 'master' passa il pulsante.'''
+class ClickerCursor(threading.Thread):
+    '''< Thread > object which performs a request (.start method) with the 
+    provided '.url'. Then it stores the data in '.data' attribute.'''
+    def __init__(self, button = None):
+        super().__init__()
+        # GameButton object
+        self.button = button
+        # Il Lock serve per non interferire con altri processi
+        self.lock = threading.Lock()
+    def run(self):
+        '''Makes the URL request and stores the data in '.data' attribute.'''
+        with self.lock:
+            self.button.cursor = True
+            self.button.pady += 2
+        time.sleep(0.2)
+        with self.lock:
+            self.button.cursor = False
+            self.button.pady -= 2
+
+def buttonCommand(fun = None, *, button):
+    '''Animazione del pulsante quando viene cliccato.'''
     def decorator_buttonCommand(fun):
         @functools.wraps(fun)
         def wrapper_buttonCommand(*args, **kargs):
-            if not master:
-                button.cursor = True
-                button.render(surf, pos)
-                value = fun()
-                time.sleep(0.2)
-                button.cursor = False
-                button.render(surf, pos)
-            else:
-                button.cursor = True
-                master.updateSurface()
-                time.sleep(0.2)
-                button.cursor = False
-                master.updateSurface()
+            clicker = ClickerCursor(button)
+            clicker.start()
+            value = fun(*args, **kargs)
             return value
         return wrapper_buttonCommand
     if fun:

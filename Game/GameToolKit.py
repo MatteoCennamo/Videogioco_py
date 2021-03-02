@@ -40,7 +40,7 @@ INDICE:
 import pygame                # Pacchetto standard per videogame in Python
 import pygame.freetype       # Per il font delle scritte
 import OBJfunctions as objf  # Per le funzioni degli obj e il Menu
-#import GameDecorators as GD  # Per i decoratori del gioco
+import GameDecorators as GD  # Per i decoratori del gioco
 import sys                   # Per lavorare con i moduli e pacchetti
 
 
@@ -1343,6 +1343,8 @@ class ResponceBox():
     def render(self, surf, pos):
         '''Renderizza il box nella 'pygame.Surface' ('surf') nella posizione in 
         'pos' (x, y).'''
+        # Aggiorna la finestra
+        self.updateAll()
         # Renderizza la surface
         surf.blit(self.surface, pos)
         # Renderizza il cursore
@@ -1462,7 +1464,6 @@ class ResponceBox():
                                          posy - cellH * ((current // nX) % nY) - 
                                          parent.pady - parent.inline * numLine], 1)
                         checkResponceBox(ans, self, i, 0)
-            self.updateAll()
 
 '''
 CLASSE GAMEBUTTON
@@ -1478,13 +1479,15 @@ class GameButton(ResponceBox):
     def __init__(self, size, *args, master = None, command = None, arg = None, 
                  karg = None, **kargs):
         super().__init__(size, *args, **kargs)
-        self.__mode = 'active'     # il cursore deve essere abilitato
+        self.__mode = 'sleep'      # il cursore deve essere abilitato
         self.__cursor = False      # il cursore deve essere invisibile
         # funzione che lancia il pulsante
         if command:
             self.command = lambda: command(*arg, **karg)
         else:
             self.command = lambda: print('click!')
+        # Aggiungi decoratore al click
+        self.command = GD.buttonCommand(self.command, button = self)
         self.__result = None       # risultato della funzione lanciata
     
     @property
@@ -1492,7 +1495,16 @@ class GameButton(ResponceBox):
         '''Memorizza eventuali risultati della funzione '.command'.'''
         return self.__result
     
+    def set_command(self, fun, *args, **kargs):
+        '''Imposta la funzione che viene lanciata quando il pulsante viene 
+        premuto. In 'args' e 'kargs' si possono passare gli argomenti da passare 
+        alla funzione 'fun'.'''
+        self.command = GD.buttonCommand(lambda: fun(*args, **kargs), button = self)
+    
     def mousePress(self, pos, button):
+        '''Prende come input la posizione relativa del mouse ('pos') e il pulsante 
+        premuto (vedi pygame.MOUSEBUTTONDOWN). Lancia la funzione associata al 
+        pulsante.'''
         if button == 1: # pulsante sinistro del mouse
             nX, nY = self.cellNumber
             cellW, cellH = self.cellSize
@@ -1505,9 +1517,31 @@ class GameButton(ResponceBox):
                 # Lancia la funzione e memorizza il risultato
                 self.__result = self.command()
     
+    def updateSurface(self):
+        '''Aggiorna la surface se vengono apportate modifiche ai testi o alla 
+        disposizione.'''
+        # Pulisci la surface
+        self.surface = pygame.Surface(self.size)
+        # Crea il bordo con lo spessore
+        light = [(0, 0), (self.size[0], 0), (self.size[0] - self.edgeWidth, 
+            self.edgeWidth), (self.edgeWidth, self.size[1] - self.edgeWidth), 
+            (0, self.size[1]), (0, 0)]
+        dark = [self.size, (self.size[0], 0), (self.size[0] - self.edgeWidth, 
+            self.edgeWidth), (self.edgeWidth, self.size[1] - self.edgeWidth), 
+            (0, self.size[1]), self.size]
+        pygame.draw.polygon(self.surface, [c // 2 for c in self.bg] if self.cursor \
+            else [c + (255 - c) // 2 for c in self.bg], light)
+        pygame.draw.polygon(self.surface, [c // 2 for c in self.bg], dark)
+        self.surface.fill(self.bg, rect = (self.edgeWidth, self.edgeWidth, \
+             self.size[0] - 2 * self.edgeWidth, self.size[1] - 2 * self.edgeWidth))
+        self.dispose()
+        return self.surface
+    
     def render(self, surf, pos):
-        '''Renderizza il box nella 'pygame.Surface' ('surf') nella posizione in 
-        'pos' (x, y).'''
+        '''Renderizza il pulsante nella 'pygame.Surface' ('surf') nella posizione 
+        in 'pos' (x, y).'''
+        # Aggiorna il pulsante
+        self.updateAll()
         # Renderizza la surface
         surf.blit(self.surface, pos)
         # Renderizza il cursore

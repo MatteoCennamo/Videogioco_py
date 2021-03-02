@@ -1,5 +1,5 @@
 CLASS	CAT	X	Y	W	H	PATH	xPOS	yPOS	zPOS	WIDTH	HEIGHT	xSPEED	ySPEED	FUN	TYPE	PL	PV	nFRAMES
-1000	1100	0	25
+1000	1100	0	-474.0
 gtk.Oggetto	pavimento	224	0.0	32	32	./Sprites/Pianure.png	0.0	0.0	0.0	1000	1100	0.1	0.1	objf._Void	nan	0.0	0.0	1
 gtk.Oggetto	pavimento	192	64.0	32	32	./Sprites/Pianure.png	0.0	0.0	0.0	100	100	0.1	0.1	objf._Void	nan	0.0	0.0	1
 gtk.Oggetto	pavimento	192	64.0	32	32	./Sprites/Pianure.png	100.0	0.0	0.0	100	100	0.1	0.1	objf._Void	nan	0.0	0.0	1
@@ -75,4 +75,6 @@ gtk.Oggetto	oggetto	4	0.0	24	32	./Sprites/Alberi.png	717.0	1004.0	0.0	100	110	0.
 gtk.Oggetto	oggetto	2	1.0	34	34	./Sprites/Rocce.png	-56.0	1003.0	0.0	120	120	0.1	0.1	objf.collinionObstacles	nan	5.0	60.0	1
 gtk.Oggetto	oggetto	2	1.0	34	34	./Sprites/Rocce.png	-17.0	930.0	0.0	120	120	0.1	0.1	objf.collinionObstacles	nan	5.0	60.0	1
 gtk.Oggetto	oggetto	111	15.0	18	17	./Sprites/Rocce.png	137.0	874.0	0.0	50	50	0.1	0.1	objf.collinionObstacles	Roccia piccola	5.0	15.0	1
-gtk.Oggetto	ostacolo	4	0	24	32	./Sprites/Alberi.png	396	193	0	100	110	0.1	0.1	objf.collinionObstacles		20	60	1
+gtk.Oggetto	ostacolo	4	0.0	24	32	./Sprites/Alberi.png	396.0	193.0	0.0	100	110	0.1	0.1	objf.collinionObstacles	nan	20.0	60.0	1
+gtk.Oggetto	pavimento	192	0.0	32	32	./Sprites/Pianure.png	297.0	65.0	0.0	100	100	0.1	0.1	objf._Void	nan	0.0	0.0	1
+gtk.Oggetto	pavimento	0	0.0	32	32	./Sprites/Pianure.png	450.0	127.0	0.0	100	100	0.1	0.1	objf._Void	nan	0.0	0.0	1

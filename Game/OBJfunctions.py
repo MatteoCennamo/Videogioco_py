@@ -177,7 +177,8 @@ def menuOggetti(root):
     albero = copy.copy(root.obj['ostacolo'][0])
     albero.h = 90
     provaGamestring = gtk.GameString('Questa è una prova per andare a capo.')
-    pulsante = gtk.GameButton((90, 30), ['Premi!'], edgeWidth = 2, padx = 15)
+    pulsante = gtk.GameButton((90, 30), ['Premi!'], edgeWidth = 4, padx = 18, 
+                              pady = 4, cursor = False, bg = (200, 230, 230))
     ans = gtk.multiQuest(root, '''Seleziona un oggetto.''', "No! Lasciami\nstare!", 
                          "Sì, fammi\nsalvare!", "Più oggetti!", "Un altro", "Ancora!", 
                          "1\n2\n3????????? Ancora", 'Basta', ['Monete:', root.obj['oggetto'][0]], 
@@ -186,7 +187,7 @@ def menuOggetti(root):
                          AnsBoxSize = (560, 450), #truncAns = 12, 
                          AnsParams = {'fontsize': 17, 'padx': 5, 'pady': 10, 
                                       'disposition': '5x4', 'bg': (250, 240, 240), 
-                                      'cursor': False})
+                                      'cursor': False, 'mode': 'static'})
 
  # Apre il Menu principale
 def menuOpen(root):
