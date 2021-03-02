@@ -42,7 +42,6 @@ import pygame.freetype       # Per il font delle scritte
 import OBJfunctions as objf  # Per le funzioni degli obj e il Menu
 #import GameDecorators as GD  # Per i decoratori del gioco
 import sys                   # Per lavorare con i moduli e pacchetti
-#from itertools import chain  # Per calcoli iterativi su dizionari e liste
 
 
 '''
@@ -155,16 +154,18 @@ def OBJactivete(obj, root):
 # Trasforma una stringa in una lista di stringhe
 def truncString2List(s, limit):
     '''Trasforma una stringa in una lista di stringhe. Le stringhe sono troncate 
-     dopo 'limit' numero di caratteri.'''
-    l_txt = s.split('\n')
+    dopo 'limit' numero di caratteri.'''
+    l_txt = s.split('\n') if isinstance(s, str) else s.string.split('\n')
     list_txt = []
-    def handleLimit(s, limit):
+    def handleLimit(s, limit, main):
         '''Tronca una stringa al limite di caratteri, trasformandola in lista.'''
         list_txt = []   # Inizializza lista di output
         partial_s = ''  # Inizializza stringa parziale
         for w in s.split(' '): # Prendi parola per parola
-            len_partial = len(partial_s)
-            if len_partial + len(w)  + 1 > limit: # Limite superato
+            len_partial = len(partial_s) if isinstance(main, str) else \
+                main.get_size(partial_s)[0]
+            len_w = len(w) if isinstance(main, str) else main.get_size(w)[0]
+            if len_partial + len_w  + 1 > limit: # Limite superato
                 if not partial_s:   # se partial_s è vuoto
                     list_txt += [' ' + w]
                 else: # limite superato, ma partial_s non è vuoto
@@ -175,7 +176,7 @@ def truncString2List(s, limit):
         list_txt += [partial_s]
         return list_txt
     for i in l_txt:
-        list_txt += handleLimit(i, limit)
+        list_txt += handleLimit(i, limit, s)
     return [s[1:] for s in list_txt if len(s) > 0]
 
 def multiQuest(root, domanda, *args, truncQuest = 100, 
@@ -259,7 +260,7 @@ def multiQuest(root, domanda, *args, truncQuest = 100,
                     ansBox.cursorMove((0, -1))
                 # Se premi 'Invio'
                 if e.key == pygame.K_RETURN:
-                    return ansBox.current
+                    return ansBox.get_responces()
                 
             if e.type == pygame.MOUSEBUTTONDOWN:
                 if e.button == 1: # pulsante sinistro del mouse
@@ -282,6 +283,7 @@ def multiQuest(root, domanda, *args, truncQuest = 100,
                       - ansBox.size[0] - OFFSETX, -root.window.pos[1] + \
                       root.screen.size[1] - surf_y - ansBox.size[1] - OFFSETY))
         root.screen.set_mode.blit(root.window.surface, root.window.pos)
+        root.status_bar.updateBar(root)
         pygame.display.update()
 
 '''
@@ -1074,14 +1076,17 @@ class GameString():
         '''Modifica la stringa che viene rappresentata nella casella di testo.'''
         self.string = string
     
-    def get_size(self):
+    def get_size(self, string = None):
         '''Prende le dimensioni del testo quando viene renderizzato. Usa il metodo 
-        '.size' dei pygame.font.Font.'''
-        return self._font.get_rect(self.string)[2:4]
+        '.size' dei pygame.font.Font. Se viene passata una stringa in 'string', 
+        ritorna le dimensioni della stringa di testo con la formattazione attuale.'''
+        if string == None:
+            string = self.string 
+        return self._font.get_rect(string)[2:4]
     
     def get_rect(self):
         '''Ricava un oggetto pygame.Rect dal GameString.'''
-        return pygame.Rect(self.get_size, self.pos)
+        return pygame.Rect(self.pos, self.get_size)
     
     def render(self, surf, pos = None, rect = None):
         '''Renderizza la scritta nella Surface 'surf'.'''
@@ -1141,22 +1146,34 @@ class ResponceBox():
     'fontname' è il nome del font (vedi pygame.freetype.SysFont).
     'padx' e 'pady' sono distanza (in pixel) del testo dai bordi del box.
     'edgeWidth' è lo spessore in pixel della cornice del box.
+    'edgeColor' è il colore della cornice del box (nero di default).
+    'cursorColor' è il colore del cursore (nero di default).
     'inline' è l'interlinea da lasciare tra una riga di testo e un'altra (di 
     default, viene calcolata del 'fontsize').
     'disposition' indica se le celle di testo devono essere disposte verticalmente 
-    (default, 'v'), orizzontalmente ('h') o a matrice ('nxm') [vedi '.dispose'].'''
+    (default, 'v'), orizzontalmente ('h') o a matrice ('nxm') [vedi '.dispose'].
+    'mode' stabilisce come si deve comportare la ResponceBox quando riceve un 
+    comando dal mouse. I valori ammessi sono:
+        active -> (default) il cursore è sempre visibile;
+        sleep  -> il cursore viene disattivato se il mouse viene cliccato fuori 
+                  dal box;
+        static -> il corsore non viene mai visualizzato.'''
     def __init__(self, size, *args, current = 0, bg = (255, 255, 255), 
                  textcolor = (0, 0, 0), cursor = True, fontsize = 16, 
                  fontname = 'Comic Sans MS', padx = 5, pady = 5, edgeWidth = 5, 
-                 inline = None, disposition = 'vertical'):
+                 edgeColor = (0, 0, 0), cursorColor = (0, 0, 0), inline = None, 
+                 singleCursor = False, disposition = 'vertical', mode = 'active'):
         self.__ans = args           # lista delle celle di testo
-        self.__size = size            # dimensioni del box
-        self.__current = current      # valore scelto
+        self.__size = size          # dimensioni del box
+        self.__current = current    # valore scelto
+        self.__mode = mode          # comportamento del cursore in risposta ai click
         self.bg = bg                # colore di background
         self.textcolor = textcolor  # colore del testo
         self.fontsize = fontsize    # dimensioni del font
         self.fontname = fontname    # tipo di font
         self.edgeWidth = edgeWidth  # spessore del bordo
+        self.edgeColor = edgeColor  # colore del bordo
+        self.cursorColor = cursorColor # colore del cursore
         if inline == None:
             inline = fontsize + 2
         self.inline = inline        # interlinea
@@ -1219,6 +1236,22 @@ class ResponceBox():
         self.updateAll()
     
     @property
+    def mode(self):
+        '''Comportamento del cursore in risposta ai click del mouse. Può avere 
+        i seguenti valori: 'active' (default, il cursore è sempre visualizzato); 
+        'sleep' (il cursore è visualizzato solo se si clicca all'interno del box);
+        'static' (il cursore non viene mai visualizzato).'''
+        return self.__mode
+    @mode.setter
+    def mode(self, new):
+        accepted_values = ('active', 'sleep', 'static')
+        if new in accepted_values:
+            self.__mode = new
+            self.updateCursor()
+        else:
+            raise ValueError(f'"mode" deve essere uno dei seguenti: {accepted_values}')
+    
+    @property
     def n_ans(self):
         '''Numero di risposte.'''
         return len(self.ans)
@@ -1248,6 +1281,7 @@ class ResponceBox():
         '''Aggiorna la surface se vengono apportate modifiche ai testi o alla 
         disposizione.'''
         self.surface = pygame.Surface(self.size)
+        self.surface.fill(self.edgeColor)
         self.surface.fill(self.bg, rect = (self.edgeWidth, self.edgeWidth, \
              self.size[0] - 2 * self.edgeWidth, self.size[1] - 2 * self.edgeWidth))
         self.dispose()
@@ -1258,8 +1292,9 @@ class ResponceBox():
         dimensione viene modificata.'''
         # Surface del cursore
         self.cursor_surface = pygame.Surface(self.cellSize)
+        self.cursor_surface.fill(self.cursorColor)
         # Crea trasparenza del cursore
-        if self.cursor:
+        if self.cursor and self.mode != 'static':
             self.cursor_surface.set_alpha(100)
         else:
             self.cursor_surface.set_alpha(0) # Trasparente
@@ -1302,11 +1337,6 @@ class ResponceBox():
                             elif isinstance(t, (ResponceBox, GameString, Personaggio, 
                                                 Oggetto)):
                                 t.render(cellSurface, pos)
-                    elif isinstance(self.ans[idx_ans], pygame.Surface):
-                        cellSurface.blit(self.ans[idx_ans], [0, 0])
-                    elif isinstance(self.ans[idx_ans], (ResponceBox, GameString, Personaggio, 
-                                        Oggetto)):
-                        self.ans[idx_ans].render(cellSurface, [0, 0])
                     self.surface.blit(cellSurface, cellPos)
                 idx_ans += 1 # vai alla prossima cella di testo
     
@@ -1316,13 +1346,37 @@ class ResponceBox():
         # Renderizza la surface
         surf.blit(self.surface, pos)
         # Renderizza il cursore
-        surf.blit(self.cursor_surface, [pos[0] + self.cursor_pos[0], pos[1] + 
-                                self.cursor_pos[1]])
+        if self.mode != 'static':
+            surf.blit(self.cursor_surface, [pos[0] + self.cursor_pos[0], pos[1] + 
+                                            self.cursor_pos[1]])
     
     def get_rect(self, pos = (0, 0)):
         '''Restituisce il pygame.Rect. Di default, la posizione viene posta a 
         (0, 0), ma può essere cambiata con l'argomento 'pos'.'''
         return pygame.Rect(pos, self.size)
+    
+    def get_responces(self):
+        '''Restituisce una lista nidificata che contiene tutti i valori di 
+        .current per se stessa e per le ResponceBox più interne.
+        NOTA:il primo valore è la risposta selezionata nella ResonceBox più 
+        esterna, mentre quelle a mano a mano più interne sono scansionate per 
+        celle, da sinistra verso destra e dall'alto verso il basso.
+        
+        ESEMPIO di risultato:
+            [0]  -> se unica ResponceBox
+            
+            [9, [0], [1, [3]]] -> se nidificata'''
+        out = [self.current]
+        def recursion(ans, counter):
+            if isinstance(ans, (list, tuple)):
+                for a in ans:
+                    counter = recursion(a, counter)
+            if isinstance(ans, ResponceBox):
+                counter += [ans.get_responces()]
+            return counter
+        for ans in self.ans:
+            out = recursion(ans, out)
+        return out
     
     def cursorMove(self, direction):
         '''Modifica 'self.current' e la posizione del cursore a seconda del valore 
@@ -1369,49 +1423,94 @@ class ResponceBox():
             # Togli il bordo per rendere i calcoli successivi più facili
             posx, posy = [pos[0] - self.edgeWidth, pos[1] - self.edgeWidth]
             if (posx < 0 or posx > cellW * nX) or (posy < 0 or posy > cellH * nY):
-                # Fuori dei bordi, non fare nulla
-                pass
+                # Fuori dei bordi
+                if self.mode == 'sleep':
+                    self.current = -1
+                    self.cursor = False
+                # parsa tutte le celle
+                for i, ans in enumerate(self.ans):
+                    # Se nella cella selezionata l'oggetto è ResponceBox, lancia il 
+                    # mousePress della cella
+                    if i < self.n_ans:
+                        def checkResponceBox(item, parent, current, numLine):
+                            if isinstance(item, list):
+                                for numLine, i in enumerate(item):
+                                    checkResponceBox(i, parent, current, numLine)
+                            elif isinstance(item, ResponceBox):
+                                #item.cursor = True
+                                item.mousePress([-1, -1], 1)
+                        checkResponceBox(ans, self, i, 0)
             else:
+                self.cursor = True
                 # Modifica '.current'
                 currentx = min([posx // cellW, nX - 1])
                 currenty = min([posy // cellH, nY - 1])
                 # Aggiusta il valore corrente
                 self.current = int(currenty * nX + currentx)
-                # Se nella cella selezionata l'oggetto è ResponceBox, lancia il 
-                # mousePress della cella
-                
-                if self.current < len(self.ans):
-                    def checkResponceBox(item, numLine):
-                        if isinstance(item, list):
-                            for numLine, i in enumerate(item):
-                                checkResponceBox(i, numLine)
-                        elif isinstance(item, ResponceBox):
-                            item.mousePress(\
-                                    [posx - cellW * currentx - self.padx, 
-                                     posy - cellH * currenty - self.pady - 
-                                     self.inline * numLine], 1)
-                            self.updateAll()
-                    checkResponceBox(self.ans[self.current], 0)
+                # parsa tutte le celle
+                for i, ans in enumerate(self.ans):
+                    # Se nella cella selezionata l'oggetto è ResponceBox, lancia il 
+                    # mousePress della cella
+                    if i < self.n_ans:
+                        def checkResponceBox(item, parent, current, numLine):
+                            if isinstance(item, list):
+                                for numLine, i in enumerate(item):
+                                    checkResponceBox(i, parent, current, numLine)
+                            elif isinstance(item, ResponceBox):
+                                item.mousePress(\
+                                        [posx - cellW * (current % nX) - parent.padx, 
+                                         posy - cellH * ((current // nX) % nY) - 
+                                         parent.pady - parent.inline * numLine], 1)
+                        checkResponceBox(ans, self, i, 0)
+            self.updateAll()
+
+'''
+CLASSE GAMEBUTTON
+'''
+class GameButton(ResponceBox):
+    '''Una ResponceBox che attiva direttamente la funzione associata in 'command' 
+    quando selezionato con il mouse. In 'arg' può essere passata una lista di 
+    argomenti da passare a 'command',  mentre in 'karg' puoi passare un dizionario 
+    con i keyword arguments.
+    NOTA: per funzionare correttamente, deve essere renderizzato in un'altra 
+    ResponceBox con .mousePress() abilitato. Altrimenti bisogna passare alla 
+    funzione esplicitamente la posizione relativa del mouse dopo il click.'''
+    def __init__(self, size, *args, master = None, command = None, arg = None, 
+                 karg = None, **kargs):
+        super().__init__(size, *args, **kargs)
+        self.__mode = 'active'     # il cursore deve essere abilitato
+        self.__cursor = False      # il cursore deve essere invisibile
+        # funzione che lancia il pulsante
+        if command:
+            self.command = lambda: command(*arg, **karg)
+        else:
+            self.command = lambda: print('click!')
+        self.__result = None       # risultato della funzione lanciata
     
-    def configure(self, size = None, current = None, bg = None, 
-                 textcolor = None, cursor = None, fontsize = None, 
-                 fontname = None, padx = None, pady = None, edgeWidth = None, 
-                 inline = None, disposition = None):
-        self.size      = size      if size      != None else self.size
-        self.current   = current   if current   != None else self.current
-        self.bg        = bg        if bg        != None else self.bg
-        self.textcolor = textcolor if textcolor != None else self.textcolor
-        self.cursor    = cursor    if cursor    != None else self.cursor
-        self.fontsize  = fontsize  if fontsize  != None else self.fontsize
-        self.fontname  = fontname  if fontname  != None else self.fontname
-        self.padx      = padx      if padx      != None else self.padx
-        self.pady      = pady      if pady      != None else self.pady
-        self.edgeWidth = edgeWidth if edgeWidth != None else self.edgeWidth
-        self.inline    = inline    if inline    != None else self.inline
-        self.disp      = disposition if disposition != None else self.disp
-        # Aggiorna la surface della finestra con i nuovi valori
-        self.__init__(self.size, *self.ans, current = self.current, bg = 
-                      self.bg, textcolor = self.textcolor, cursor = self.cursor, 
-                      fontsize = self.fontsize, fontname = self.fontname, padx = 
-                      self.padx, pady = self.pady, edgeWidth = self.edgeWidth, 
-                      inline = self.inline)
+    @property
+    def result(self):
+        '''Memorizza eventuali risultati della funzione '.command'.'''
+        return self.__result
+    
+    def mousePress(self, pos, button):
+        if button == 1: # pulsante sinistro del mouse
+            nX, nY = self.cellNumber
+            cellW, cellH = self.cellSize
+            # Togli il bordo per rendere i calcoli successivi più facili
+            posx, posy = [pos[0] - self.edgeWidth, pos[1] - self.edgeWidth]
+            if (posx < 0 or posx > cellW * nX) or (posy < 0 or posy > cellH * nY):
+                # Fuori dei bordi
+                pass
+            else:
+                # Lancia la funzione e memorizza il risultato
+                self.__result = self.command()
+    
+    def render(self, surf, pos):
+        '''Renderizza il box nella 'pygame.Surface' ('surf') nella posizione in 
+        'pos' (x, y).'''
+        # Renderizza la surface
+        surf.blit(self.surface, pos)
+        # Renderizza il cursore
+        if self.cursor:
+            surf.blit(self.cursor_surface, [pos[0] + self.cursor_pos[0], pos[1] + 
+                                            self.cursor_pos[1]])

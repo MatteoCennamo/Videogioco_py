@@ -13,6 +13,7 @@ INDICE:
 1) IMPORT
 '''
 import pygame
+import time
 import functools
 import GameToolKit as gtk
 
@@ -20,36 +21,28 @@ import GameToolKit as gtk
 '''
 2) PER FUNZIONI
 '''
-def actBoxes(fun = None, *, updaterFUN = None, arrows = {}):
-    DefaulArrows = {'right': True, 'left': True, 'up': True, 'down': True}
-    # Aggiungi ad 'arrows' le chiavi mancanti da 'DefaultArrows'
-    for k, v in DefaulArrows.items():
-        if k not in arrows.keys():
-            arrows[k] = v
-    def decorator_actBox(fun):
+def buttonCommand(fun = None, *, button = None, master = None, surf = None, pos = None):
+    '''Stabilisci la ResponceBox principale la sua posizione. Se il pulsante 
+    non ha una ResponceBox principale, passare la posizione del pulsante con 
+    'master_pos' e in 'master' passa il pulsante.'''
+    def decorator_buttonCommand(fun):
         @functools.wraps(fun)
-        def wrapper_actBox(*args, **kargs):
-            # Entra nel loop
-            while True:
-                # Scansiono gli input dello user
-                for e in pygame.event.get():
-                    # Pulsante spinto in basso
-                    if e.type == pygame.KEYDOWN:
-                        # Pigia pulsante a destra o sinistra
-                        if arrows['right'] and e.key == pygame.K_RIGHT:
-                            fun('right')
-                        if arrows['left'] and e.key == pygame.K_LEFT:
-                            fun('left')
-                        if arrows['down'] and e.key == pygame.K_DOWN:
-                            fun('down')
-                        if arrows['up'] and e.key == pygame.K_UP:
-                            fun('up')
-                        # Se premi 'Invio'
-                        if e.key == pygame.K_RETURN:
-#                            fun('return')
-                            return fun('return')
-                updaterFUN()
-        return wrapper_actBox
+        def wrapper_buttonCommand(*args, **kargs):
+            if not master:
+                button.cursor = True
+                button.render(surf, pos)
+                value = fun()
+                time.sleep(0.2)
+                button.cursor = False
+                button.render(surf, pos)
+            else:
+                button.cursor = True
+                master.updateSurface()
+                time.sleep(0.2)
+                button.cursor = False
+                master.updateSurface()
+            return value
+        return wrapper_buttonCommand
     if fun:
-        return decorator_actBox(fun)
-    return decorator_actBox
+        return decorator_buttonCommand(fun)
+    return decorator_buttonCommand
