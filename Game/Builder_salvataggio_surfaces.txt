@@ -1,1 +1,1 @@
-C:/Users/mattc/Documents/Python/Game/Codici/Ostacoli.txt
+C:/Users/mattc/Documents/Python/Game/Codici/Oggetti.txt

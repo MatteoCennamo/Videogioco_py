@@ -1,5 +1,5 @@
 CLASS	CAT	X	Y	W	H	PATH	xPOS	yPOS	zPOS	WIDTH	HEIGHT	xSPEED	ySPEED	FUN	TYPE	PL	PV	nFRAMES
-1000	1100	0	-404.0
+1000	1100	0	25
 gtk.Oggetto	pavimento	224	0.0	32	32	./Sprites/Pianure.png	0.0	0.0	0.0	1000	1100	0.1	0.1	objf._Void	nan	0.0	0.0	1
 gtk.Oggetto	pavimento	192	64.0	32	32	./Sprites/Pianure.png	0.0	0.0	0.0	100	100	0.1	0.1	objf._Void	nan	0.0	0.0	1
 gtk.Oggetto	pavimento	192	64.0	32	32	./Sprites/Pianure.png	100.0	0.0	0.0	100	100	0.1	0.1	objf._Void	nan	0.0	0.0	1
@@ -78,8 +78,3 @@ gtk.Oggetto	oggetto	111	15.0	18	17	./Sprites/Rocce.png	137.0	874.0	0.0	50	50	0.1
 gtk.Oggetto	ostacolo	4	0.0	24	32	./Sprites/Alberi.png	396.0	193.0	0.0	100	110	0.1	0.1	objf.collinionObstacles	nan	20.0	60.0	1
 gtk.Oggetto	pavimento	192	0.0	32	32	./Sprites/Pianure.png	297.0	65.0	0.0	100	100	0.1	0.1	objf._Void	nan	0.0	0.0	1
 gtk.Oggetto	pavimento	0	0.0	32	32	./Sprites/Pianure.png	450.0	127.0	0.0	100	100	0.1	0.1	objf._Void	nan	0.0	0.0	1
-gtk.Oggetto	ostacolo	4	0	24	32	./Sprites/Alberi.png	831	35	0	100	110	0.1	0.1	objf.collinionObstacles		20	60	1
-gtk.Oggetto	oggetto	0	0	7	12	./Sprites/Oggetti.png	237	763	0	28	48	0.1	0.1	objf.collisionCoins	Moneta	5	7	5
-gtk.Oggetto	oggetto	0	0	7	12	./Sprites/Oggetti.png	354	897	0	28	48	0.1	0.1	objf.collisionCoins	Moneta	5	7	5
-gtk.Oggetto	oggetto	0	0	7	12	./Sprites/Oggetti.png	680	1042	0	28	48	0.1	0.1	objf.collisionCoins	Moneta	5	7	5
-gtk.Oggetto	oggetto	0	0	7	12	./Sprites/Oggetti.png	932	770	0	28	48	0.1	0.1	objf.collisionCoins	Moneta	5	7	5

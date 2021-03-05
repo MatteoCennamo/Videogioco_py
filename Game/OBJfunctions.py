@@ -142,8 +142,7 @@ def collisionAnimationObj(root, obj, frames):
         # posiziona 10 pixel soplra il personaggio:
         obj.y = root.obj["personaggio"][0].y - obj.h - 10
         # Ridimensiona l'oggetto
-        obj.w += 2
-#        obj.h += 2
+        obj.w += 2 # h è ridimensionato in automatico
         obj.image = pygame.transform.scale(obj.image, (int(obj.w), int(obj.h)))
         # Dopo 'frames' numero di frame, l'animazione termina
         if obj.chrono == frames:

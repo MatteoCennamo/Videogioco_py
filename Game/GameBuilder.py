@@ -652,7 +652,7 @@ def gameOpen():
     '''Apre la schermata del gioco.'''
     global game, root
     # Reimposta il titolo della finestra
-    game.screen.title = pygame.display.set_caption(root.filename.split('/')[-1])
+    game.screen.title = root.filename.split('/')[-1] # pygame.display.set_caption(root.filename.split('/')[-1])
     # Pulisci la surface di 'root.window'
     def control_window_size(v, m):
         ''' v -> value. m -> minimum value.'''

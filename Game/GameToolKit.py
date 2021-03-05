@@ -24,9 +24,9 @@ INDICE:
     
     7) CLASSE StatusBar:
         
-    8) CLASSE Personaggio:
+    8) CLASSE Oggetto:
         
-    9) CLASSE Oggetto:
+    9) CLASSE Personaggio:
     
     10) CLASSE GameString:
     
@@ -151,10 +151,12 @@ def OBJactivete(obj, root):
         # Rappresenta gli obj nella window
         obj.render(root.window.surface)
 
-# Trasforma una stringa in una lista di stringhe
+# Trasforma una stringa o un GameString in una lista di stringhe
 def truncString2List(s, limit):
     '''Trasforma una stringa in una lista di stringhe. Le stringhe sono troncate 
-    dopo 'limit' numero di caratteri.'''
+    dopo 'limit' numero di caratteri.
+    Si può passare anche un GameString e in questo caso 'limit' è la larghezza 
+    massima in pixel prima di troncare la stringa.'''
     l_txt = s.split('\n') if isinstance(s, str) else s.string.split('\n')
     list_txt = []
     def handleLimit(s, limit, main):
@@ -285,6 +287,7 @@ def multiQuest(root, domanda, *args, truncQuest = 100,
         root.screen.set_mode.blit(root.window.surface, root.window.pos)
         root.status_bar.updateBar(root)
         pygame.display.update()
+
 
 '''
 4) CLASSE GAMEINIT
@@ -523,8 +526,6 @@ class GameInit():
         # Quado esci dal main loop
         pygame.quit()
     
-    # Rappresenta il Menu in Window
-    # Avvia un nuovo main loop
     def ReLoop(self, mainloop = _Wait):
         '''Esce dal main loop e rientra con un nuovo 'GameInit.mainloop'.'''
         # Esce dal main loop
@@ -618,31 +619,28 @@ class GameInit():
         chiave del dizionario, 'obj' è il valore corrispondente che si vuole 
         aggiungere (deve essere di tipo 'Oggetto' o 'Personaggio'). 'fun' è 
         la funzione che si vuole associare all'oggetto.'''
-        
         # Aggiungi funzione all'oggetto
         obj.fun = fun
         # Aggiungi elemento alla lista
         self.obj[objType.lower()] = self.obj[objType.lower()] + [obj]
     
-    # Cosa restituisce quando usi la funzione 'str'
     def __str__(self):
-        a = ["<class 'GameToolKit.GameInit'>:\r\n\r\n" + 
-             ".screen     -> {}".format(str(self.screen)) + 
-             ".window     -> {}".format(str(self.window)) + 
-             ".status_bar -> {}".format(str(self.status_bar)) + 
-             ".clock      -> pygame.time.Clock\r\n" + 
-             ".dt         -> time frame: {}\r\n".format(str(self.dt)) + 
-             ".run        -> logical: {}\r\n".format(self.run) + 
-             "._reloop    -> logical: {}\r\n".format(self._reloop) + 
-             ".mainloop   -> function\r\n" + 
-             ".obj        -> dictionary of {}:\r\n".format(len(self.obj)) + 
-             "    [personaggio] -> list of {}\r\n".format(len(self.obj["personaggio"])) + 
-             "    [oggetto]     -> list of {}\r\n".format(len(self.obj["oggetto"])) + 
-             "    [ostacolo]    -> list of {}\r\n".format(len(self.obj["ostacolo"])) + 
-             "    [volante]     -> list of {}\r\n".format(len(self.obj["volante"])) + 
-             "    [pavimento]   -> list of {}\r\n".format(len(self.obj["pavimento"])) + 
-             "    [menu]        -> list of {}\r\n".format(len(self.obj["menu"]))]
-        return a[0]
+        return f"""<class '{__name__}.{self.__class__.__name__}'>:
+.screen     -> {str(self.screen)}
+.window     -> {str(self.window)}
+.status_bar -> {str(self.status_bar)}
+.clock      -> pygame.time.Clock
+.dt         -> time frame: {str(self.dt)}
+.run        -> logical: {self.run}
+._reloop    -> logical: {self._reloop}
+.mainloop   -> function: {self.mainloop.__name__}
+.obj        -> dictionary of {len(self.obj)}:
+    [personaggio] -> list of {len(self.obj["personaggio"])}
+    [oggetto]     -> list of {len(self.obj["oggetto"])}
+    [ostacolo]    -> list of {len(self.obj["ostacolo"])}
+    [volante]     -> list of {len(self.obj["volante"])}
+    [pavimento]   -> list of {len(self.obj["pavimento"])}
+    [menu]        -> list of {len(self.obj["menu"])}"""
 
 
 '''
@@ -655,17 +653,26 @@ class Screen():
         self.set_mode = pygame.display.set_mode(size)  # creazione della finestra
         self.set_mode.fill(sys.modules[__name__].GRAY) # background di default
         self.size = list(size)                         # dimansioni della finestra
-        self.title = pygame.display.set_caption(title) # titolo della finestra
+        self._title = title                            # titolo della finestra
+        pygame.display.set_caption(title)
+    
+    @property
+    def title(self):
+        '''Titolo della finestra pygame.'''
+        return self._title
+    @title.setter
+    def title(self, new):
+        self._title = new
+        pygame.display.set_caption(self._title)
     
     # Cosa restituisce quando usi la funzione 'str'
     def __str__(self):
-        a = ["<class 'GameToolKit.Screen'>:\r\n" + 
-             "    .set_mode -> pygame.display.set_mode\r\n" + 
-             "    .title    -> pygame.display.set_caption\r\n" + 
-             "    .size     -> list of 2:\r\n" + 
-             "        [0] width  -> {}\r\n".format(self.size[0]) + 
-             "        [1] height -> {}\r\n".format(self.size[1])]
-        return a[0]
+        return f"""<class '{__name__}.{self.__class__.__name__}'>:
+    .set_mode -> pygame.display.set_mode
+    .title    -> pygame.display.set_caption ('{self._title}')
+    .size     -> list of 2:
+        [0] width  -> {self.size[0]}
+        [1] height -> {self.size[1]}"""
 
 
 '''
@@ -708,15 +715,14 @@ class Window():
     
     # Cosa restituisce quando usi la funzione 'str'
     def __str__(self):
-        a = ["<class 'GameToolKit.Window'>:\r\n" + 
-             "    .surface -> pygame.Surface\r\n" + 
-             "    .size    -> list of 2:\r\n" + 
-             "        [0] width  -> {}\r\n".format(self.size[0]) + 
-             "        [1] height -> {}\r\n".format(self.size[1]) + 
-             "    .pos     -> list of 2:\r\n" + 
-             "        [0] posx -> {}\r\n".format(self.pos[0]) + 
-             "        [1] posy -> {}\r\n".format(self.pos[1])]
-        return a[0]
+        return f"""<class '{__name__}.{self.__class__.__name__}'>:
+    .surface -> pygame.Surface
+    .size    -> list of 2:
+        [0] width  -> {self.size[0]}
+        [1] height -> {self.size[1]}
+    .pos     -> list of 2:
+        [0] posx -> {self.pos[0]}
+        [1] posy -> {self.pos[1]}"""
 
 
 '''
@@ -751,180 +757,28 @@ class StatusBar():
         root.screen.set_mode.blit(self.surface, self.pos)
     
     def __str__(self):
-         a = ["<class 'GameToolKit.StatusBar'>:\r\n" + 
-             "    .surface -> pygame.Surface\r\n" + 
-             "    .size    -> list of 2:\r\n" + 
-             "        [0] width  -> {}\r\n".format(self.size[0]) + 
-             "        [1] height -> {}\r\n".format(self.size[1]) + 
-             "    .pos     -> list of 2:\r\n" + 
-             "        [0] posx -> {}\r\n".format(self.pos[0]) + 
-             "        [1] posy -> {}\r\n".format(self.pos[1]) + 
-             "    .text    -> {}".format(str(self.text)) + 
-             "    .string  -> {}\r\n".format(self.string) + 
-             "    .bg      -> {}\r\n".format(self.bg)]
-         return a[0]
+         return f"""<class '{__name__}.{self.__class__.__name__}'>:
+    .surface -> pygame.Surface
+    .size    -> list of 2:
+        [0] width  -> {self.size[0]}
+        [1] height -> {self.size[1]}
+    .pos     -> list of 2:
+        [0] posx -> {self.pos[0]}
+        [1] posy -> {self.pos[1]}
+    .text    -> {str(self.text)}
+    .string  -> {self.string}
+    .bg      -> {self.bg}"""
 
 
 '''
-8) CLASSE PERSONAGGIO
-'''
-class Personaggio():
-    '''Questa è la classe per il Personaggio giocabile. Viene aggiunto a 
-    'GameInit' con la funzione 'GameInit.OBJadd()'. Il personaggio viene 
-    rappresentato sullo schermo se '.status' = True (opzione di default).'''
-    def __init__(self, path, ritaglio, pos, size, speed, pl = 20, 
-                 pv = 40, tipo = ''):
-        # Inizializza tutti gli attributi dell'oggetto 'Personaggio'
-        self.status = True        # True = rappresenta in window
-        self.type = tipo          # tipo di personaggio
-        self.coins = 0            # Numero di monete raccolte
-        self.path = path          # path della sprite
-        self.chrono = 0           # conta il numero di loop trascorsi
-        self.fun = lambda: _Void()# funzione associata al personaggio
-        self.ritaglio = list(ritaglio)  # (x, y, w, h) del ritaglio di 'image'
-                                        # solo dell'immagine in alto a sinistra.
-        self.pl = pl              # penetrabilità laterale (in pixel)
-        self.pv = pv              # penetrabilità verticale (in pixel)
-        self.__w = size[0]        # larghezza
-        self.__h = size[1]        # altezza
-        self.x = pos[0]           # posizione x in window
-        self.y = pos[1]           # posizione y in window
-        if len(pos) > 2:
-            self.z = pos[2]       # posizione in z
-        else:
-            self.z = 0
-        self.xchange = 0          # spostamento lungo x (moltiplica con xspeed)
-        self.ychange = 0          # spostamento lungo y (moltiplica con yspeed)
-        self.xspeed = speed[0]    # velocità lungo x
-        self.yspeed = speed[1]    # velocità lungo y
-        
-        # Crea l'immagine che viene rappresentata nalla window
-        imageAll = pygame.image.load(path).convert_alpha()
-        
-        # Inizializza image_list
-        self.image_dict = {"down": [], "left": [], "right": [], "up": []}
-        
-        row = 0
-        # Ritaglia l'immagine
-        for i in self.image_dict.keys():
-            col_list = []
-            for col in range(3):
-                w = self.ritaglio[2]
-                x = self.ritaglio[0] + w * col
-                h = self.ritaglio[3]
-                y = self.ritaglio[1] + h * row
-                new_image = imageAll.subsurface(x, y, w, h)
-                new_image = pygame.transform.scale(new_image, size)
-                col_list.append(new_image)
-            new_image = imageAll.subsurface(x - w, y, w, h)
-            new_image = pygame.transform.scale(new_image, size)
-            col_list.append(new_image)
-            self.image_dict[i] = col_list # aggiorna il dizionario con la nuova riga
-            row += 1 # passa alla prossima riga
-        
-        # Prendi l'immagine di default
-        self.image = self.image_dict["down"][1]  # frontale
-        # Ridimensiona l'immagine
-        # self.image = pygame.transform.scale(self.image, size)
-        self.OLDdirection = "down"
-    
-    @property
-    def w(self):
-        '''Largezza dell''oggetto da renderizzare.'''
-        return self.__w
-    @w.setter
-    def w(self, new):
-        '''Mantiene le proporzioni con self.__h.'''
-        prop = self.__h / self.__w
-        self.__w = new
-        self.__h = new * prop
-    
-    @property
-    def h(self):
-        '''Altezza dell''oggetto da renderizzare.'''
-        return self.__h
-    @h.setter
-    def h(self, new):
-        '''Mantiene le proporzioni con self.__w.'''
-        prop = self.__w / self.__h
-        self.__h = new
-        self.__w = new * prop
-    
-    def get_render_rect(self):
-        '''Restituisce il pygame.Rect dell'oggetto da renderizzare. Usa invece 
-        il  metodo '.get_collision_rect' per verificare le collisioni.'''
-        return pygame.Rect([self.x, self.y - self.z], [self.w, self.h])
-    
-    def get_collision_rect(self):
-        '''Restituisce il pygame.Rect dell'oggetto per le collisioni. Usa invece 
-        il  metodo '.get_render_rect' per la renderizzazione dell'icona.'''
-        return pygame.Rect([self.x + self.pl, self.y - self.pv], 
-                           [self.w - 2 * self.pl, self.h - self.pv])
-    
-    def resize(self, w = None, h = None):
-        '''Modifica le proporzioni della surface.'''
-        if w == None:
-            w = self.w
-        if h == None:
-            h = self.h
-        fun = self.fun
-        self.__init__(self.path, self.ritaglio, (self.x, self.y), (w, h), 
-                      (self.xspeed, self.yspeed), pl = self.pl, pv = self.pv, 
-                      tipo = self.type)
-        self.fun = fun
-    
-    def render(self, surf, pos = None):
-        '''Renderizza il 'Personaggio' in una 'Surface'.'''
-        if pos == None:
-            pos = self.get_render_rect()#(self.x, self.y)
-        surf.blit(self.image, pos)
-    
-    def __str__(self):
-        a = ["<class 'GameToolKit.Personaggio'>:\r\n\r\n" + 
-             ".status       -> logical: {}\r\n".format(self.status) + 
-             ".type         -> {}: {}\r\n".format(type(self.type), self.type) + 
-             ".chrono       -> {}: {}\r\n".format(type(self.chrono), self.chrono) + 
-             ".fun          -> funzione\r\n" + 
-             ".image        -> pygame.Surface\r\n" + 
-             ".image_dict   -> dictionary of 4:\r\n" + 
-             "    [down]  -> list of 3 pygame.Surface\r\n" + 
-             "    [left]  -> list of 3 pygame.Surface\r\n" + 
-             "    [right] -> list of 3 pygame.Surface\r\n" + 
-             "    [up]    -> list of 3 pygame.Surface\r\n" + 
-             ".OLDdirection -> string: {}\r\n".format(self.OLDdirection) +
-             '.path         -> {}: "{}"\r\n'.format(type(self.path), self.path) + 
-             ".ritaglio     -> list of 4:\r\n" + 
-             "    [0] x -> {}\r\n".format(self.ritaglio[0]) + 
-             "    [1] y -> {}\r\n".format(self.ritaglio[1]) + 
-             "    [2] w -> {}\r\n".format(self.ritaglio[2]) + 
-             "    [3] h -> {}\r\n".format(self.ritaglio[3]) + 
-             ".x            -> {}: {}\r\n".format(type(self.x), str(self.x)) + 
-             ".y            -> {}: {}\r\n".format(type(self.y), str(self.y)) + 
-             ".z            -> {}: {}\r\n".format(type(self.z), str(self.z)) + 
-             ".w            -> {}: {}\r\n".format(type(self.w), str(self.w)) + 
-             ".h            -> {}: {}\r\n".format(type(self.h), str(self.h)) + 
-             ".xchange      -> {}: {}\r\n".format(type(self.xchange), 
-                           str(self.xchange)) + 
-                           ".ychange      -> {}: {}\r\n".format(type(self.ychange), 
-                                         str(self.ychange))]
-        b = [".xspeed       -> {}: {}\r\n".format(type(self.xspeed), 
-             str(self.xspeed)) + 
-            ".yspeed       -> {}: {}\r\n".format(type(self.yspeed), 
-                          str(self.yspeed)) + 
-             ".pl           -> {}: {}\r\n".format(type(self.pl), str(self.pl)) + 
-             ".pv           -> {}: {}\r\n".format(type(self.pv), str(self.pv))]
-        return a[0] + b[0]
-
-
-'''
-9) CLASSE OGGETTO
+8) CLASSE OGGETTO
 '''
 class Oggetto():
     '''Crea un Oggetto che può essere aggiunto all'oggetto 'GameInit' con 
     'GameInit.OBJadd()'. L'oggetto sarà rappresentato nello schermo se avrà 
     l'attributo '.status' = True (opzione di default).'''
     def __init__(self, path, ritaglio, pos, size, tipo, status = True, pl = 0, 
-                 pv = 0, nFrames = 1, z = 0):
+                 pv = 0, nFrames = 1):
         # Inizializza tutti gli attributi dell'oggetto 'Oggetto'
         self.status = status       # True = rappresenta in window
         self.collided = False      # True = l'oggetto è stato colpito
@@ -933,6 +787,7 @@ class Oggetto():
         self.chrono = 0            # conta il numero di loop trascorsi
         self.type = tipo           # tipo di oggetto (es. coin, arma, ...)
         self.ritaglio = ritaglio   # (x, y, w, h) del ritaglio di 'image'
+        self.nFrames = nFrames     # numero di frame dell'animazione
         self.pl = pl               # penetrabilità laterale (in pixel)
         self.pv = pv               # penetrabilità verticale (in pixel)
         self.__w = size[0]         # larghezza
@@ -946,12 +801,11 @@ class Oggetto():
         self.image_list = []       # contiene la lista dei frame dell'oggetto
         
         # Crea l'immagine che viene rappresentata nalla window
-        self.image = self.cutImage(nFrames)  # contiene l'immagine rappresentata
-                                             # in window.
+        self.image = self.cutImage()  # contiene l'immagine rappresentata in window.
     
     # Ritaglia le immagini per l'animazione di oggetti.
     # Crea una lista di immagini.
-    def cutImage(self, nFrames):
+    def cutImage(self):
         '''Ritaglia le immagini per l'animazione di oggetti. Crea una lista di 
         immagini che andranno a comporre l'attributo '.image_list'.'''
         # Crea l'immagine che viene rappresentata nalla window
@@ -960,7 +814,7 @@ class Oggetto():
         # Inizializza image_list
         self.image_list = []
         
-        for col in range(nFrames):
+        for col in range(self.nFrames):
             w = self.ritaglio[2]
             x = self.ritaglio[0] + w * col
             h = self.ritaglio[3]
@@ -1018,34 +872,138 @@ class Oggetto():
     def render(self, surf, pos = None):
         '''Renderizza l'Oggetto in una 'Surface'.'''
         if pos == None:
-            pos = self.get_render_rect()#(self.x, self.y)
+            pos = self.get_render_rect()
         surf.blit(self.image, pos)
     
     def __str__(self):
-        a = ["<class 'GameToolKit.Oggetto'>:\r\n\r\n" + 
-             "    .status     -> logical: {}\r\n".format(self.status) + 
-             "    .collided   -> logical: {}\r\n".format(self.collided) + 
-             '    .type       -> "{}"\r\n'.format(self.type) + 
-             "    .chrono     -> {}: {}\r\n".format(type(self.chrono), self.chrono) + 
-             "    .fun        -> funzione: {}\r\n".format(str(self.fun)) + 
-             "    .image      -> pygame.Surface\r\n" + 
-             "    .image_list -> list of {} pygame.Surface\r\n".format(len(
-                     self.image_list)) + 
-             '    .path       -> {}: "{}"\r\n'.format(type(self.path), self.path) + 
-             "    .ritaglio   -> list of 4:\r\n" + 
-             "        [0] x -> {}\r\n".format(self.ritaglio[0]) + 
-             "        [1] y -> {}\r\n".format(self.ritaglio[1]) + 
-             "        [2] w -> {}\r\n".format(self.ritaglio[2]) + 
-             "        [3] h -> {}\r\n".format(self.ritaglio[3]) + 
-             "    .x          -> {}: {}\r\n".format(type(self.x), str(self.x)) + 
-             "    .y          -> {}: {}\r\n".format(type(self.y), str(self.y)) + 
-             "    .z          -> {}: {}\r\n".format(type(self.z), str(self.z)) + 
-             "    .w          -> {}: {}\r\n".format(type(self.w), str(self.w)) + 
-             "    .h          -> {}: {}\r\n".format(type(self.h), str(self.h)) + 
-             "    .pl         -> {}: {}\r\n".format(type(self.pl), str(self.pl)) + 
-             "    .pv         -> {}: {}\r\n".format(type(self.pv), str(self.pv))]
-        return a[0]
+        return f"""<class '{__name__}.{self.__class__.__name__}'>:
+    .status     -> logical: {self.status}
+    .collided   -> logical: {self.collided}
+    .type       -> "{self.type}"
+    .chrono     -> {type(self.chrono)}: {self.chrono}
+    .fun        -> function: {self.fun.__name__}
+    .image      -> pygame.Surface
+    .image_list -> list of {len(self.image_list)} pygame.Surface
+    .path       -> {type(self.path)}: "{self.path}"
+    .ritaglio   -> list of 4:
+        [0] x -> {self.ritaglio[0]}
+        [1] y -> {self.ritaglio[1]}
+        [2] w -> {self.ritaglio[2]}
+        [3] h -> {self.ritaglio[3]}
+    .x          -> {type(self.x)}: {int(self.x)}
+    .y          -> {type(self.y)}: {int(self.y)}
+    .z          -> {type(self.z)}: {int(self.z)}
+    .w          -> {type(self.w)}: {int(self.w)}
+    .h          -> {type(self.h)}: {int(self.h)}
+    .pl         -> {type(self.pl)}: {int(self.pl)}
+    .pv         -> {type(self.pv)}: {int(self.pv)}"""
 
+
+'''
+9) CLASSE PERSONAGGIO
+'''
+class Personaggio(Oggetto):
+    '''Questa è la classe per il Personaggio giocabile. Viene aggiunto a 
+    'GameInit' con la funzione 'GameInit.OBJadd()'. Il personaggio viene 
+    rappresentato sullo schermo se '.status' = True (opzione di default).'''
+    def __init__(self, path, ritaglio, pos, size, speed, tipo = '', 
+                 status = True, pl = 20, pv = 40, nFrames = 3):
+        super().__init__(path, ritaglio, pos, size, tipo, status = status, 
+                         pl = pl, pv = pv, nFrames = nFrames)
+        # Inizializza tutti gli attributi dell'oggetto 'Personaggio'
+        self.coins = 0            # Numero di monete raccolte
+        self.fun = lambda: _Void()# funzione associata al personaggio
+        self.xchange = 0          # spostamento lungo x (moltiplica con xspeed)
+        self.ychange = 0          # spostamento lungo y (moltiplica con yspeed)
+        self.xspeed = speed[0]    # velocità lungo x
+        self.yspeed = speed[1]    # velocità lungo y
+        # Prendi l'immagine di default
+        self.image = self.cutImage()  # frontale
+        # self.image = pygame.transform.scale(self.image, size)
+        self.OLDdirection = "down"
+    
+    def cutImage(self):
+        '''Ritaglia le immagini per l'animazione dei personaggi. Crea un 
+        dizionario di immagini che andranno a comporre l'attributo '.image_dict'.'''
+        # Crea l'immagine che viene rappresentata nalla window
+        imageAll = pygame.image.load(self.path).convert_alpha()
+        # Inizializza image_dict
+        self.image_dict = {"down": [], "left": [], "right": [], "up": []}
+        
+        row = 0
+        # Ritaglia l'immagine
+        for i in self.image_dict.keys(): # righe
+            col_list = []
+            for col in range(self.nFrames): # colonne
+                w = self.ritaglio[2]
+                x = self.ritaglio[0] + w * col
+                h = self.ritaglio[3]
+                y = self.ritaglio[1] + h * row
+                new_image = imageAll.subsurface(x, y, w, h)
+                new_image = pygame.transform.scale(new_image, (int(self.w), int(self.h)))
+                col_list.append(new_image)
+            new_image = imageAll.subsurface(x - w, y, w, h)
+            new_image = pygame.transform.scale(new_image, (int(self.w), int(self.h)))
+            col_list.append(new_image)
+            self.image_dict[i] = col_list # aggiorna il dizionario con la nuova riga
+            row += 1 # passa alla prossima riga
+        # Prendi l'immagine di default
+        return self.image_dict["down"][1]  # la prima
+    
+    def get_collision_rect(self):
+        '''Restituisce il pygame.Rect dell'oggetto per le collisioni. Usa invece 
+        il  metodo '.get_render_rect' per la renderizzazione dell'icona.'''
+        return pygame.Rect([self.x + self.pl, self.y - self.pv], 
+                           [self.w - 2 * self.pl, self.h - self.pv])
+    
+    def resize(self, w = None, h = None):
+        '''Modifica le proporzioni della surface.'''
+        if w == None:
+            w = self.w
+        if h == None:
+            h = self.h
+        fun = self.fun
+        self.__init__(self.path, self.ritaglio, (self.x, self.y), (w, h), 
+                      (self.xspeed, self.yspeed), pl = self.pl, pv = self.pv, 
+                      tipo = self.type)
+        self.fun = fun
+    
+    def updateImages(self, size):
+        for k, v in self.image_dict.keys():
+            self.image_dict[k] = map(lambda x: pygame.transform.scale(x, \
+                  (int(self.w), int(self.h))), v)
+        self.image = pygame.transform.scale(self.image, (int(self.w), int(self.h)))
+    
+    def __str__(self):
+        return f"""<class '{__name__}.{self.__class__.__name__}'>:
+.status       -> logical: {self.status}
+.type         -> {type(self.type)}: {self.type}
+.chrono       -> {type(self.chrono)}: {self.chrono}
+.fun          -> function: {self.fun.__name__}
+.image        -> pygame.Surface
+.image_dict   -> dictionary of 4:
+    [down]  -> list of 3 pygame.Surface
+    [left]  -> list of 3 pygame.Surface
+    [right] -> list of 3 pygame.Surface
+    [up]    -> list of 3 pygame.Surface
+.OLDdirection -> string: {self.OLDdirection}
+.path         -> {type(self.path)}: "{self.path}"
+.ritaglio     -> list of 4:
+    [0] x -> {self.ritaglio[0]}
+    [1] y -> {self.ritaglio[1]}
+    [2] w -> {self.ritaglio[2]}
+    [3] h -> {self.ritaglio[3]}
+.x            -> {type(self.x)}: {int(self.x)}
+.y            -> {type(self.y)}: {int(self.y)}
+.z            -> {type(self.z)}: {int(self.z)}
+.w            -> {type(self.w)}: {int(self.w)}
+.h            -> {type(self.h)}: {int(self.h)}
+.xchange      -> {type(self.xchange)}: {str(self.xchange)}
+.ychange      -> {type(self.ychange)}: {str(self.ychange)}
+.xspeed       -> {type(self.xspeed)}: {str(self.xspeed)}
+.yspeed       -> {type(self.yspeed)}: {str(self.yspeed)}
+.pl           -> {type(self.pl)}: {int(self.pl)}
+.pv           -> {type(self.pv)}: {int(self.pv)}"""
 
 '''
 10) CLASSE GAMESTRING
@@ -1105,16 +1063,15 @@ class GameString():
         self.pos[1] += deltay  # Aggiunge delta-y alla posizione
     
     def __str__(self):
-        a = ["<class 'GameInit.GameString'>:\r\n" + 
-             "        .string    -> {}\r\n".format(self.string) + 
-             "        .pos       -> list of 2:\r\n" + 
-             "            [0] x -> {}\r\n".format(self.pos[0]) + 
-             "            [0] y -> {}\r\n".format(self.pos[1]) + 
-             "        .bg        -> {}\r\n".format(self.bg) + 
-             "        .textcolor -> {}\r\n".format(self.textcolor) + 
-             "        .rotation  -> {}\r\n".format(self.rotation) + 
-             "        ._font     -> {}\r\n".format(type(self._font))]
-        return a[0]
+        return f"""<class '{__name__}.{self.__class__.__name__}'>:
+        .string    -> {self.string}
+        .pos       -> list of 2:
+            [0] x -> {self.pos[0]}
+            [0] y -> {self.pos[1]}
+        .bg        -> {self.bg}
+        .textcolor -> {self.textcolor}
+        .rotation  -> {self.rotation}
+        ._font     -> {type(self._font)}"""
 
 '''
 11) CLASSE RESPONCEBOX
@@ -1464,6 +1421,28 @@ class ResponceBox():
                                          posy - cellH * ((current // nX) % nY) - 
                                          parent.pady - parent.inline * numLine], 1)
                         checkResponceBox(ans, self, i, 0)
+    def __repr__(self):
+        return f"""<class '{__name__}.{self.__class__.__name__}'>:
+.__ans          -> {type(self.__ans)} of {self.n_ans}
+.__size         -> list of 2:
+    [0] width  -> {self.size[0]}
+    [1] height -> {self.size[1]}
+.__current      -> {self.current}
+.__mode         -> {self.mode}
+.bg             -> {self.bg}
+.textcolor      -> {self.textcolor}
+.fontsize       -> {self.fontsize}
+.fontname       -> {self.fontname}
+.edgeWidth      -> {self.edgeWidth}
+.edgeColor      -> {self.edgeColor}
+.cursorColor    -> {self.cursorColor}
+.inline         -> {self.inline}
+.padx           -> {self.padx}
+.pady           -> {self.pady}
+.__cursor       -> {self.cursor}
+.__disp         -> {self.disp}
+.cursor_surface -> pygame.Surface
+.surface        -> pygame.Surface"""
 
 '''
 CLASSE GAMEBUTTON
@@ -1476,8 +1455,8 @@ class GameButton(ResponceBox):
     NOTA: per funzionare correttamente, deve essere renderizzato in un'altra 
     ResponceBox con .mousePress() abilitato. Altrimenti bisogna passare alla 
     funzione esplicitamente la posizione relativa del mouse dopo il click.'''
-    def __init__(self, size, *args, master = None, command = None, arg = None, 
-                 karg = None, **kargs):
+    def __init__(self, size, *args, command = None, arg = None, karg = None, 
+                 **kargs):
         super().__init__(size, *args, **kargs)
         self.__mode = 'sleep'      # il cursore deve essere abilitato
         self.__cursor = False      # il cursore deve essere invisibile
@@ -1492,7 +1471,7 @@ class GameButton(ResponceBox):
     
     @property
     def result(self):
-        '''Memorizza eventuali risultati della funzione '.command'.'''
+        '''Restituisce eventuali risultati della funzione '.command'.'''
         return self.__result
     
     def set_command(self, fun, *args, **kargs):
@@ -1548,3 +1527,28 @@ class GameButton(ResponceBox):
         if self.cursor:
             surf.blit(self.cursor_surface, [pos[0] + self.cursor_pos[0], pos[1] + 
                                             self.cursor_pos[1]])
+    
+    def __repr__(self):
+        return f"""<class '{__name__}.{self.__class__.__name__}'>:
+.__ans          -> {type(self.__ans)} of {self.n_ans}
+.__size         -> list of 2:
+    [0] width  -> {self.size[0]}
+    [1] height -> {self.size[1]}
+.__current      -> {self.current}
+.__mode         -> {self.mode}
+.command        -> function: {self.command.__name__}
+.__result       -> {self.result}
+.bg             -> {self.bg}
+.textcolor      -> {self.textcolor}
+.fontsize       -> {self.fontsize}
+.fontname       -> {self.fontname}
+.edgeWidth      -> {self.edgeWidth}
+.edgeColor      -> {self.edgeColor}
+.cursorColor    -> {self.cursorColor}
+.inline         -> {self.inline}
+.padx           -> {self.padx}
+.pady           -> {self.pady}
+.__cursor       -> {self.cursor}
+.__disp         -> {self.disp}
+.cursor_surface -> pygame.Surface
+.surface        -> pygame.Surface"""
