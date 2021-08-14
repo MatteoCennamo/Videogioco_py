@@ -16,21 +16,25 @@ INDICE:
         -> truncString2List
         -> multiQuest
         
-    4) CLASSE GameInit:
+    4) CLASSE GameInit
         
-    5) CLASSE Screen:
+    5) CLASSE Screen
         
-    6) CLASSE Window:
+    6) CLASSE Window
     
-    7) CLASSE StatusBar:
+    7) CLASSE StatusBar
         
-    8) CLASSE Oggetto:
+    8) CLASSE Oggetto
         
-    9) CLASSE Personaggio:
+    9) CLASSE Personaggio
     
-    10) CLASSE GameString:
+    10) CLASSE PNG
     
-    11) CLASSE ResponceBox:
+    11) CLASSE GameString
+    
+    12) CLASSE ResponseBox
+    
+    13) CLASSE GameButton
 
 '''
 
@@ -47,31 +51,22 @@ import sys                   # Per lavorare con i moduli e pacchetti
 '''
 2) COLORI
 '''
-# colors = (("BLACK", (0, 0, 0)), ("GRAY", (128, 128, 128)), ("WHITE", (255, 255, 255)), 
-#           ("RED", (255, 0, 0)), ("BLUE", (0, 0, 255)), ("YELLOW", (255, 255, 0)), 
-#           ("MAGENTA", (255, 0, 255)), ("CYAN", (0, 255, 255)), ("ORANGE", (255, 128, 0)), 
-#           ("DARK_ROSE", (255, 0, 128)), ("LILAC", (200, 100, 160)), ("ROSE", (255, 90, 90)), 
-#           ("SKIN_ROSE", (255, 130, 130)), ("PURPLE", (160, 0, 255)), ("SKY_BLUE", (0, 128, 255)))
-#globals()['GREEN'] = (128, 255, 0)
-
-# Possono essere estratti con il comando: GameToolKit.BLACK...
-setattr(sys.modules[__name__], "BLACK", (0, 0, 0))
-setattr(sys.modules[__name__], "GRAY", (128, 128, 128))
-setattr(sys.modules[__name__], "WHITE", (255, 255, 255))
-setattr(sys.modules[__name__], "RED", (255, 0, 0))
-#setattr(sys.modules[__name__], "GREEN", (0, 255, 0))
-setattr(sys.modules[__name__], "BLUE", (0, 0, 255))
-setattr(sys.modules[__name__], "YELLOW", (255, 255, 0))
-setattr(sys.modules[__name__], "MAGENTA", (255, 0, 255))
-setattr(sys.modules[__name__], "CYAN", (0, 255, 255))
-setattr(sys.modules[__name__], "ORANGE", (255, 128, 0))
-setattr(sys.modules[__name__], "DARK_ROSE", (255, 0, 128))
-setattr(sys.modules[__name__], "LILAC", (200, 100, 160))
-setattr(sys.modules[__name__], "ROSE", (255, 90, 90))
-setattr(sys.modules[__name__], "SKIN_ROSE", (255, 130, 130))
-setattr(sys.modules[__name__], "GREEN", (128, 255, 0))
-setattr(sys.modules[__name__], "PURPLE", (160, 0, 255))
-setattr(sys.modules[__name__], "SKY_BLUE", (0, 128, 255))
+BLACK = (0, 0, 0)
+GRAY = (128, 128, 128)
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+BLUE = (0, 0, 255)
+YELLOW = (255, 255, 0)
+MAGENTA = (255, 0, 255)
+CYAN = (0, 255, 255)
+ORANGE = (255, 128, 0)
+DARK_ROSE = (255, 0, 128)
+LILAC = (200, 100, 160)
+ROSE = (255, 90, 90)
+SKIN_ROSE = (255, 130, 130)
+GREEN = (128, 255, 0)
+PURPLE = (160, 0, 255)
+SKY_BLUE = (0, 128, 255)
 
 
 '''
@@ -102,6 +97,27 @@ def collisionDetection(root, collider, collided):
         -> "24": collisione dall'alto a sinistra'''
     # xr, yr, wr, hr = collider.get_collision_rect()
     # xd, yd, wd, hd = collided.get_collision_rect()
+    # # posizione in x del collider precedente al movimento
+    # xrOLD = xr - (collider.xchange * collider.xspeed * root.dt)
+    # # posizione in y del collider precedente al movimento
+    # yrOLD = yr - (collider.ychange * collider.yspeed * root.dt)
+    # # output
+    # out = ""
+    # # Verifica la collisione:
+    # if (xr > xd - wr) and (xr < xd + wd) and \
+    #     (yrOLD < yd + hd) and (yrOLD > yd - hr):
+    #     if collider.xchange < 0: # il collider viene da destra
+    #         out = out + "1"      # caso 1
+    #     if collider.xchange > 0: # il collider viene da sinistra
+    #         out = out + "2"      # caso 2
+    # if (xrOLD > xd - wr) and (xrOLD < xd + wd) and \
+    #     (yr < yd + hd) and (yr > yd - hr):
+    #     if collider.ychange < 0: # il personaggio viene da sotto
+    #         out = out + "3"      # caso 3
+    #     if collider.ychange > 0: # il personaggio viene da sopra
+    #         out = out + "4"      # caso 4
+    # return out
+    
     xr = collider.x   # posizione in x del collider
     xd = collided.x   # posizione in x del collided
     yr = collider.y   # posizione in y del collider
@@ -121,7 +137,6 @@ def collisionDetection(root, collider, collided):
     
     # output
     out = ""
-    
     # Verifica la collisione:
     if (xr > xd - wr + pld) and (xr < xd + wd - pld) and (
             yrOLD < yd + hd - pvr) and (yrOLD > yd - hr + pvd):
@@ -197,7 +212,7 @@ def multiQuest(root, domanda, *args, truncQuest = 100,
     contiene le risposte. 
     'QuestParams' è un dizionario che contiene i parametri per il testo della 
     domanda, mentre 'AnsParams' è quello per la risposta. I parametri che possono 
-    essere immessi sono quelli di dell'oggetto 'GameToolKit.ResponceBox'.'''
+    essere immessi sono quelli di dell'oggetto 'GameToolKit.ResponseBox'.'''
     # Scostamento dal bordo dello schermo
     OFFSETX = 10
     # Scostamento dalla box della domanda
@@ -212,21 +227,21 @@ def multiQuest(root, domanda, *args, truncQuest = 100,
     else:
         surf_x, surf_y = QuestBoxSize
     # Valori di default di 'QuestParams'
-    DefQP = {'fontsize': 20, 'padx': 5, 'pady': 5, 'bg': (255, 255, 255), 
-             'textcolor': (0, 0, 0), 'cursor': False}
+    DefQP = {'fontsize': 20, 'padx': 5, 'pady': 5, 'textcolor': (0, 0, 0), 
+             'cursor': False}
     # Modifica QuestParams con i valori di default
     for k, v in DefQP.items():
         if k not in QuestParams:
             QuestParams[k] = v
     # Valori di default di 'AnsParams'
-    AnsQP = {'fontsize': 28, 'padx': 5, 'pady': 10, 'bg': (255, 255, 255), 
-             'textcolor': (0, 0, 0), 'cursor': True, 'current': 0}
+    AnsQP = {'fontsize': 28, 'padx': 5, 'pady': 10, 'textcolor': (0, 0, 0), 
+             'cursor': True, 'current': 0}
     # Modifica AnsParams con i valori di default
     for k, v in AnsQP.items():
         if k not in AnsParams:
             AnsParams[k] = v
     
-    surf = ResponceBox((surf_x, surf_y), truncString2List(domanda, truncQuest), 
+    surf = ResponseBox((surf_x, surf_y), truncString2List(domanda, truncQuest), 
                        **QuestParams)
     
     # Crea il box che contiene le risposte
@@ -238,7 +253,7 @@ def multiQuest(root, domanda, *args, truncQuest = 100,
             txts.append(truncString2List(arg, truncAns))
         else:
             txts.append(arg)
-    ansBox = ResponceBox(AnsBoxSize, *txts, **AnsParams)
+    ansBox = ResponseBox(AnsBoxSize, *txts, **AnsParams)
     
     # Entra nel loop
     while True:
@@ -262,18 +277,32 @@ def multiQuest(root, domanda, *args, truncQuest = 100,
                     ansBox.cursorMove((0, -1))
                 # Se premi 'Invio'
                 if e.key == pygame.K_RETURN:
-                    return ansBox.get_responces()
+                    return ansBox.get_Responses()
                 
             if e.type == pygame.MOUSEBUTTONDOWN:
                 if e.button == 1: # pulsante sinistro del mouse
                     ansBox.mousePress((-root.screen.size[0] \
                   + ansBox.size[0] + OFFSETX + e.pos[0], -root.screen.size[1] \
                   + surf_y + ansBox.size[1] + OFFSETY + e.pos[1]), e.button)
+            if e.type == pygame.MOUSEMOTION:
+                def prova_in(r, p, tree_pos):
+                    if tree_pos in ([0], [0, 8], [0, 9, 1]):
+                        r.edgeColor = ORANGE
+                        r.bg = WHITE
+                        r.string_kargs['bg'] = WHITE
+                def prova_out(r, p, tree_pos):
+                    if tree_pos in ([0], [0, 8], [0, 9, 1]):
+                        r.edgeColor = BLACK
+                        r.bg = (250, 240, 240)
+                        r.string_kargs['bg'] = (250, 240, 240)
+                ansBox.mouseMove((-root.screen.size[0] \
+                + ansBox.size[0] + OFFSETX + e.pos[0], -root.screen.size[1] \
+                + surf_y + ansBox.size[1] + OFFSETY + e.pos[1]), **{'fun_in': prova_in, 'fun_out': prova_out})
         
         # Pulisci la surface di 'root.window'
         root.window.surface = pygame.Surface(root.window.size)
         # Colora la surface di 'root.window' di verde
-        root.window.surface.fill(sys.modules[__name__].GREEN)
+        root.window.surface.fill(GREEN)
         
         # Aggiorna la finestra
         root.updateWindow()
@@ -624,7 +653,7 @@ class GameInit():
         # Aggiungi elemento alla lista
         self.obj[objType.lower()] = self.obj[objType.lower()] + [obj]
     
-    def __str__(self):
+    def __repr__(self):
         return f"""<class '{__name__}.{self.__class__.__name__}'>:
 .screen     -> {str(self.screen)}
 .window     -> {str(self.window)}
@@ -651,7 +680,7 @@ class Screen():
     e la surface principale dove renderizzare 'Window' ('.set_mode').'''
     def __init__(self, title, size):
         self.set_mode = pygame.display.set_mode(size)  # creazione della finestra
-        self.set_mode.fill(sys.modules[__name__].GRAY) # background di default
+        self.set_mode.fill(GRAY)                       # background di default
         self.size = list(size)                         # dimansioni della finestra
         self._title = title                            # titolo della finestra
         pygame.display.set_caption(title)
@@ -666,7 +695,7 @@ class Screen():
         pygame.display.set_caption(self._title)
     
     # Cosa restituisce quando usi la funzione 'str'
-    def __str__(self):
+    def __repr__(self):
         return f"""<class '{__name__}.{self.__class__.__name__}'>:
     .set_mode -> pygame.display.set_mode
     .title    -> pygame.display.set_caption ('{self._title}')
@@ -695,7 +724,7 @@ class Window():
         
         # Pulisci lo schermo (necessario solo se le dimensioni della 
         # finestra sono più piccole di quello dello schermo)
-        # self.screen.set_mode.fill(sys.modules[__name__].GRAY)
+        # self.screen.set_mode.fill(GRAY)
         # Aggiorna i valori della posizione della finestra
         self.pos[0] += delta_pos[0]
         self.pos[1] += delta_pos[1]
@@ -714,7 +743,7 @@ class Window():
         screen.set_mode.blit(self.surface, self.pos)
     
     # Cosa restituisce quando usi la funzione 'str'
-    def __str__(self):
+    def __repr__(self):
         return f"""<class '{__name__}.{self.__class__.__name__}'>:
     .surface -> pygame.Surface
     .size    -> list of 2:
@@ -740,7 +769,7 @@ class StatusBar():
         self.size = list(size)      # dimensione della barra
         self.surface = pygame.Surface(size)  # Surface
         self.string = "Monete: %d"  # cosa viene scritto nella barra
-        self.bg = (0, 0, 0)         # colore di background (NERO)
+        self.bg = BLACK             # colore di background (NERO)
         self.text = GameString(     # scritta
                 self.string, pos = [20, 5], bg = self.bg)
     
@@ -756,7 +785,7 @@ class StatusBar():
         # Rappresenta la barra nella finestra
         root.screen.set_mode.blit(self.surface, self.pos)
     
-    def __str__(self):
+    def __repr__(self):
          return f"""<class '{__name__}.{self.__class__.__name__}'>:
     .surface -> pygame.Surface
     .size    -> list of 2:
@@ -839,7 +868,6 @@ class Oggetto():
         prop = self.__h / self.__w
         self.__w = new
         self.__h = new * prop
-        self.updateImages((self.__w, self.__h))
     
     @property
     def h(self):
@@ -851,12 +879,6 @@ class Oggetto():
         prop = self.__w / self.__h
         self.__h = new
         self.__w = new * prop
-        self.updateImages((self.__w, self.__h))
-    
-    def updateImages(self, size):
-        for i in self.image_list:
-            i = pygame.transform.scale(i, (int(self.w), int(self.h)))
-        self.image = pygame.transform.scale(self.image, (int(self.w), int(self.h)))
     
     def get_render_rect(self):
         '''Restituisce il pygame.Rect dell'oggetto da renderizzare. Usa invece 
@@ -869,13 +891,26 @@ class Oggetto():
         return pygame.Rect([self.x + self.pl, self.y - self.pv], 
                            [self.w - 2 * self.pl, self.h - self.pv])
     
+    def resize(self, w = None, h = None):
+        '''Modifica le proporzioni della surface.'''
+        if w == None:
+            w = self.w
+        if h == None:
+            h = self.h
+        fun = self.fun
+        self.__init__(self.path, self.ritaglio, (self.x, self.y), (w, h), 
+                      (self.xspeed, self.yspeed), pl = self.pl, pv = self.pv, 
+                      tipo = self.type)
+        self.fun = fun
+    
     def render(self, surf, pos = None):
         '''Renderizza l'Oggetto in una 'Surface'.'''
         if pos == None:
             pos = self.get_render_rect()
-        surf.blit(self.image, pos)
+        surf.blit(pygame.transform.scale(self.image, (int(self.w), int(self.h))), 
+                  pos)
     
-    def __str__(self):
+    def __repr__(self):
         return f"""<class '{__name__}.{self.__class__.__name__}'>:
     .status     -> logical: {self.status}
     .collided   -> logical: {self.collided}
@@ -950,31 +985,7 @@ class Personaggio(Oggetto):
         # Prendi l'immagine di default
         return self.image_dict["down"][1]  # la prima
     
-    def get_collision_rect(self):
-        '''Restituisce il pygame.Rect dell'oggetto per le collisioni. Usa invece 
-        il  metodo '.get_render_rect' per la renderizzazione dell'icona.'''
-        return pygame.Rect([self.x + self.pl, self.y - self.pv], 
-                           [self.w - 2 * self.pl, self.h - self.pv])
-    
-    def resize(self, w = None, h = None):
-        '''Modifica le proporzioni della surface.'''
-        if w == None:
-            w = self.w
-        if h == None:
-            h = self.h
-        fun = self.fun
-        self.__init__(self.path, self.ritaglio, (self.x, self.y), (w, h), 
-                      (self.xspeed, self.yspeed), pl = self.pl, pv = self.pv, 
-                      tipo = self.type)
-        self.fun = fun
-    
-    def updateImages(self, size):
-        for k, v in self.image_dict.keys():
-            self.image_dict[k] = map(lambda x: pygame.transform.scale(x, \
-                  (int(self.w), int(self.h))), v)
-        self.image = pygame.transform.scale(self.image, (int(self.w), int(self.h)))
-    
-    def __str__(self):
+    def __repr__(self):
         return f"""<class '{__name__}.{self.__class__.__name__}'>:
 .status       -> logical: {self.status}
 .type         -> {type(self.type)}: {self.type}
@@ -1005,22 +1016,40 @@ class Personaggio(Oggetto):
 .pl           -> {type(self.pl)}: {int(self.pl)}
 .pv           -> {type(self.pv)}: {int(self.pv)}"""
 
+
 '''
-10) CLASSE GAMESTRING
+10) CLASSE PNG
+'''
+class PNG(Personaggio):
+    '''Rispetto alla classe 'Personaggio', questa ha alcuni metodi per 
+    automatizzare i movimenti e le azioni.'''
+    def __init__(self, *args, **kargs):
+        super().__init__(*args, **kargs)
+
+
+'''
+11) CLASSE GAMESTRING
 '''
 class GameString():
     '''Crea un oggetto 'testo' facile da modificare e renderizzare. Bisogna 
     passare la 'stringa' che contiene il testo da proiettare.'''
     def __init__(self, string, pos = [0, 0], bg = (128, 128, 128), 
                  textcolor = (255, 255, 255), fontname = 'Comic Sans MS', 
-                 fontsize = 16, rotation = 0):
+                 fontsize = 16, rotation = 0, alpha = 255):
         self.string = string     # contiene il testo
         self.pos = list(pos)     # posizione in '.master' del testo
         self.bg = list(bg)       # colore di background
         self.rotation = rotation # rotazione della scritta
+        self.alpha = alpha       # trasparenza (tra 0 e 255)
         self.textcolor = list(textcolor)  # colore del testo
         self.set_font(fontname = 'Comic Sans MS', fontsize = fontsize, 
                       color = self.textcolor)
+    
+    @property
+    def inline(self):
+        '''Prende il valore dell'interlinea inferito dalle grandezze del font e 
+        dal tipo.'''
+        return self.get_size('U')[1] - self.get_size('u')[1]
     
     def set_font(self, fontname = 'Comic Sans MS', fontsize = 16, 
                  color = (255, 255, 255)):
@@ -1044,7 +1073,7 @@ class GameString():
     
     def get_rect(self):
         '''Ricava un oggetto pygame.Rect dal GameString.'''
-        return pygame.Rect(self.pos, self.get_size)
+        return pygame.Rect(self.pos, self.get_size())
     
     def render(self, surf, pos = None, rect = None):
         '''Renderizza la scritta nella Surface 'surf'.'''
@@ -1053,16 +1082,25 @@ class GameString():
         if rect == None:
             rect = pygame.Rect(pos, self.get_size())
         # Renderizza il font in '.master'
-        self._font.render_to(surf, rect, self.string, self.textcolor, 
-                             rotation = self.rotation, bgcolor = self.bg)
+        if self.alpha == 255:
+            self._font.render_to(surf, rect, self.string, self.textcolor, 
+                                 rotation = self.rotation, bgcolor = self.bg)
+        else:
+            # Prendi un rettangolo della surface dove blittare la stringa
+            medium_surf = surf.copy()
+            self._font.render_to(medium_surf, rect, self.string, self.textcolor, 
+                                 rotation = self.rotation, bgcolor = self.bg)
+            # Rendila trasparente
+            medium_surf.set_alpha(self.alpha)
+            surf.blit(medium_surf, (0, 0))
     
-    def move(self, deltax, deltay):
+    def move(self, deltax = 0, deltay = 0):
         '''Modifica la posizione della scritta all'interno della Surface 
         '.master' aggiungendo a '.pos' il delta-x e delta-y.'''
         self.pos[0] += deltax  # Aggiunge delta-x alla posizione
         self.pos[1] += deltay  # Aggiunge delta-y alla posizione
     
-    def __str__(self):
+    def __repr__(self):
         return f"""<class '{__name__}.{self.__class__.__name__}'>:
         .string    -> {self.string}
         .pos       -> list of 2:
@@ -1071,36 +1109,33 @@ class GameString():
         .bg        -> {self.bg}
         .textcolor -> {self.textcolor}
         .rotation  -> {self.rotation}
+        .alpha     -> {self.alpha}
         ._font     -> {type(self._font)}"""
 
 '''
-11) CLASSE RESPONCEBOX
+12) CLASSE ResponseBox
 '''
-class ResponceBox():
+class ResponseBox():
     '''Crea una finestra che contiene una sequenza di risposte. Il puntatore 
     può muoversi dalla prima risposta (quando '.current' = 0) alla seconda 
     (quando '.current' = 1), e così via. Gli elementi di 'args' devono essere 
     delle liste del tipo di quelle create con 'GameToolKit.truncString2List', 
     che contengono stringhe, oppure oggetti GameToolKit.Personaggio, 
-    GameToolkit.Oggetto, GameToolkit.ResponceBox, GameToolKit.GameString o 
+    GameToolkit.Oggetto, GameToolkit.ResponseBox, GameToolKit.GameString o 
     pygame.Surface.
     
     NOTA: gli 'args' vanno passati con la seguente struttura:
         cella1[riga1[oggetto], riga2[oggetto], ...], cella2[[], [], ...]
     'GameToolKit.truncString2List' formatta una stringa per trasformarla in cella.
     Se si vuole passare un'icona con un testo, passare una cosa del tipo:
-        cella[riga[GameToolkit.ResponceBox]]
+        cella[riga[GameToolkit.ResponseBox]]
     oppure:
         cella[riga1[GameToolkit.Oggetto], riga2[GameToolKit.GameString]]
     
     ALTRI PARAMETRI:
     'size' è una tupla che contiene la dimensione del box (x, y).
-    'bg' è il colore di background (di default, bianco).
-    'textcolor' è una tupla di interi da 0 a 255 che rappresenta il colore (RBG) 
-    del testo.
+    'cellbg' è il colore di background (di default, bianco).
     'cursor' = True se si vuole rappresentare il cursore sul testo.
-    'fontsize' è un intero che rappresenta la dimansione del font del testo. 
-    'fontname' è il nome del font (vedi pygame.freetype.SysFont).
     'padx' e 'pady' sono distanza (in pixel) del testo dai bordi del box.
     'edgeWidth' è lo spessore in pixel della cornice del box.
     'edgeColor' è il colore della cornice del box (nero di default).
@@ -1109,30 +1144,36 @@ class ResponceBox():
     default, viene calcolata del 'fontsize').
     'disposition' indica se le celle di testo devono essere disposte verticalmente 
     (default, 'v'), orizzontalmente ('h') o a matrice ('nxm') [vedi '.dispose'].
-    'mode' stabilisce come si deve comportare la ResponceBox quando riceve un 
+    'mode' stabilisce come si deve comportare la ResponseBox quando riceve un 
     comando dal mouse. I valori ammessi sono:
         active -> (default) il cursore è sempre visibile;
         sleep  -> il cursore viene disattivato se il mouse viene cliccato fuori 
                   dal box;
-        static -> il corsore non viene mai visualizzato.'''
-    def __init__(self, size, *args, current = 0, bg = (255, 255, 255), 
-                 textcolor = (0, 0, 0), cursor = True, fontsize = 16, 
-                 fontname = 'Comic Sans MS', padx = 5, pady = 5, edgeWidth = 5, 
-                 edgeColor = (0, 0, 0), cursorColor = (0, 0, 0), inline = None, 
-                 singleCursor = False, disposition = 'vertical', mode = 'active'):
+        static -> il corsore non viene mai visualizzato.
+    'kargs' sono gli argomenti dell'oggetto 'GameToolKit.GameString.'''
+    def __init__(self, size, *args, current = 0, cursor = True, padx = 5, pady = 5, 
+                 edgeWidth = 5, edgeColor = (0, 0, 0), cursorColor = (0, 0, 0), 
+                 inline = None, cellbg = (255, 255, 255), singleCursor = False, 
+                 disposition = 'vertical', mode = 'active', **kargs):
+        karg = {'bg': cellbg, 'textcolor': (0, 0, 0), 'fontsize': 16, 
+                 'fontname': 'Comic Sans MS', 'rotation': 0, 'alpha': 255}
+        # Argomanti per renderizzare le scritte (GameString)
+        self.string_kargs = {k: v if k not in kargs else kargs[k] for k, v in \
+                             karg.items()}
         self.__ans = args           # lista delle celle di testo
         self.__size = size          # dimensioni del box
         self.__current = current    # valore scelto
         self.__mode = mode          # comportamento del cursore in risposta ai click
-        self.bg = bg                # colore di background
-        self.textcolor = textcolor  # colore del testo
-        self.fontsize = fontsize    # dimensioni del font
-        self.fontname = fontname    # tipo di font
+        self.bg = cellbg            # colore di background
         self.edgeWidth = edgeWidth  # spessore del bordo
         self.edgeColor = edgeColor  # colore del bordo
         self.cursorColor = cursorColor # colore del cursore
+        self.cursorAlpha = 70       # trasparenza del cursore
+        # Secundary cursor
+        self.secCursor = {'current': -1, 'cursor': not singleCursor, 'alpha': 35}
         if inline == None:
-            inline = fontsize + 2
+            inline = self.string_kargs['fontsize'] + GameString('U', 
+                     **self.string_kargs).inline
         self.inline = inline        # interlinea
         self.padx = padx            # spaziatura da sinistra
         self.pady = pady            # spaziatura dall'alto
@@ -1252,7 +1293,7 @@ class ResponceBox():
         self.cursor_surface.fill(self.cursorColor)
         # Crea trasparenza del cursore
         if self.cursor and self.mode != 'static':
-            self.cursor_surface.set_alpha(100)
+            self.cursor_surface.set_alpha(self.cursorAlpha)
         else:
             self.cursor_surface.set_alpha(0) # Trasparente
         return self.cursor_surface
@@ -1285,14 +1326,19 @@ class ResponceBox():
                         for line, t in enumerate(self.ans[idx_ans]):
                             pos = [0, line * self.inline]
                             if isinstance(t, str):
-                                txt = GameString(t, pos = pos, bg = self.bg, \
-                                        textcolor = self.textcolor, fontsize = \
-                                        self.fontsize, fontname = self.fontname)
+                                txt = GameString(t, pos = pos, **self.string_kargs)
+                                ###-- Per andare a capo bene (zozzeria!) --###
+                                txt_width, txt_shift = txt.get_size()[0], \
+                                                       txt.get_size(' ')[0]
+                                n_shift = int((self.cellSize[0] - txt_width) / \
+                                              txt_shift) + 1
+                                # Aggiungo 'Pp' dopo una lunga serie di spazi bianchi
+                                txt.set_string(txt.string + ' ' * n_shift + 'Pp')
+                                ###----------------------------------------###
                                 txt.render(cellSurface)
                             elif isinstance(t, pygame.Surface):
                                 cellSurface.blit(t, pos)
-                            elif isinstance(t, (ResponceBox, GameString, Personaggio, 
-                                                Oggetto)):
+                            elif isinstance(t, (ResponseBox, GameString, Oggetto)):
                                 t.render(cellSurface, pos)
                     self.surface.blit(cellSurface, cellPos)
                 idx_ans += 1 # vai alla prossima cella di testo
@@ -1306,23 +1352,29 @@ class ResponceBox():
         surf.blit(self.surface, pos)
         # Renderizza il cursore
         if self.mode != 'static':
-            surf.blit(self.cursor_surface, [pos[0] + self.cursor_pos[0], pos[1] + 
-                                            self.cursor_pos[1]])
+            surf.blit(self.cursor_surface, [pos[0] + self.cursor_pos()[0], pos[1] + 
+                                            self.cursor_pos()[1]])
+            if self.secCursor['cursor'] and self.secCursor['current'] >= 0:
+                secondary_cursor = self.cursor_surface.copy()
+                secondary_cursor.set_alpha(self.secCursor['alpha'])
+                surf.blit(secondary_cursor, [pos[0] + 
+                          self.cursor_pos(current = self.secCursor['current'])[0], 
+                          pos[1] + self.cursor_pos(current = self.secCursor['current'])[1]])
     
     def get_rect(self, pos = (0, 0)):
         '''Restituisce il pygame.Rect. Di default, la posizione viene posta a 
         (0, 0), ma può essere cambiata con l'argomento 'pos'.'''
         return pygame.Rect(pos, self.size)
     
-    def get_responces(self):
+    def get_Responses(self):
         '''Restituisce una lista nidificata che contiene tutti i valori di 
-        .current per se stessa e per le ResponceBox più interne.
+        .current per se stessa e per le ResponseBox più interne.
         NOTA:il primo valore è la risposta selezionata nella ResonceBox più 
         esterna, mentre quelle a mano a mano più interne sono scansionate per 
         celle, da sinistra verso destra e dall'alto verso il basso.
         
         ESEMPIO di risultato:
-            [0]  -> se unica ResponceBox
+            [0]  -> se unica ResponseBox
             
             [9, [0], [1, [3]]] -> se nidificata'''
         out = [self.current]
@@ -1330,8 +1382,8 @@ class ResponceBox():
             if isinstance(ans, (list, tuple)):
                 for a in ans:
                     counter = recursion(a, counter)
-            if isinstance(ans, ResponceBox):
-                counter += [ans.get_responces()]
+            if isinstance(ans, ResponseBox):
+                counter += [ans.get_Responses()]
             return counter
         for ans in self.ans:
             out = recursion(ans, out)
@@ -1363,14 +1415,14 @@ class ResponceBox():
         # Aggiusta il valore corrente
         self.current = posy * nX + posx
     
-    @property
-    def cursor_pos(self):
+    def cursor_pos(self, current = None):
         '''Posizione del cursore nella box (x, y). Calcolato con 'self.current' 
-        e 'self.disp'.'''
+        e 'self.disp'. Di default, prende il 'current' del cursore principale.'''
+        current = current if current != None else self.current
         # Numero di celle i x e y
         nX,nY = self.cellNumber
-        return (self.edgeWidth + (self.current % nX) * self.cellSize[0], 
-                self.edgeWidth + ((self.current // nX) % nY) * self.cellSize[1])
+        return (self.edgeWidth + (current % nX) * self.cellSize[0], 
+                self.edgeWidth + ((current // nX) % nY) * self.cellSize[1])
     
     def mousePress(self, pos, button):
         '''Prende come input la posizione relativa del mouse ('pos') e il pulsante 
@@ -1388,17 +1440,17 @@ class ResponceBox():
                     self.cursor = False
                 # parsa tutte le celle
                 for i, ans in enumerate(self.ans):
-                    # Se nella cella selezionata l'oggetto è ResponceBox, lancia il 
+                    # Se nella cella selezionata l'oggetto è ResponseBox, lancia il 
                     # mousePress della cella
                     if i < self.n_ans:
-                        def checkResponceBox(item, parent, current, numLine):
+                        def checkResponseBox(item, parent, current, numLine):
                             if isinstance(item, list):
                                 for numLine, i in enumerate(item):
-                                    checkResponceBox(i, parent, current, numLine)
-                            elif isinstance(item, ResponceBox):
+                                    checkResponseBox(i, parent, current, numLine)
+                            elif isinstance(item, ResponseBox):
                                 #item.cursor = True
                                 item.mousePress([-1, -1], 1)
-                        checkResponceBox(ans, self, i, 0)
+                        checkResponseBox(ans, self, i, 0)
             else:
                 self.cursor = True
                 # Modifica '.current'
@@ -1408,19 +1460,101 @@ class ResponceBox():
                 self.current = int(currenty * nX + currentx)
                 # parsa tutte le celle
                 for i, ans in enumerate(self.ans):
-                    # Se nella cella selezionata l'oggetto è ResponceBox, lancia il 
+                    # Se nella cella selezionata l'oggetto è ResponseBox, lancia il 
                     # mousePress della cella
                     if i < self.n_ans:
-                        def checkResponceBox(item, parent, current, numLine):
+                        def checkResponseBox(item, parent, current, numLine):
                             if isinstance(item, list):
                                 for numLine, i in enumerate(item):
-                                    checkResponceBox(i, parent, current, numLine)
-                            elif isinstance(item, ResponceBox):
+                                    checkResponseBox(i, parent, current, numLine)
+                            elif isinstance(item, ResponseBox):
                                 item.mousePress(\
                                         [posx - cellW * (current % nX) - parent.padx, 
                                          posy - cellH * ((current // nX) % nY) - 
                                          parent.pady - parent.inline * numLine], 1)
-                        checkResponceBox(ans, self, i, 0)
+                        checkResponseBox(ans, self, i, 0)
+    
+    def mouseMove(self, pos, tree_pos = None, fun_in = None, arg_in = None, 
+                  karg_in = None, fun_out = None, arg_out = None, karg_out = None):
+        '''Prende come input la posizione relativa del mouse ('pos') ed esegue 
+        un'azione basata sulla funzione 'fun' (vedi pygame.MOUSEMOVE). Se 
+        self.singleCursor = False, 'fun' viene decorata con una funzione che 
+        rappesenta il cursore secondario nella posizione dove si trova il mouse. 
+        'arg' è una lista di argomenti aggiuntivi passati a 'fun'.
+        'karg' è un dizionario di keyword arguments passati a 'fun'.
+        Gli argomenti '_in' vengono usati se il mouse si trova all'interno della 
+        ResponseBox, altrimenti sono usati gli argomenti '_out'.
+        NOTA: 'fun' deve avere come argomenti 'self', 'pos' e 'tree_pos'. 
+        'tree_pos' è una lista che tiene traccia della posizione. La lunghezza 
+        di tale lista è il livello di recursione raggiunto.
+        
+        ESEMPIO: [0]       -> si riferisce alla main ResponseBox (lv di recursione: 1)
+                 [0, 8]    -> livello di recursione 2 (current = 8 della ResponseBox 
+                              principale).
+                 [0, 9, 1] -> livello di recursione 3 (current = 9 della ResponseBox 
+                              principale, poi current = 1 della sotto-ResponseBox).'''
+        tree_pos = tree_pos if tree_pos else [0]
+        arg_in = arg_in if arg_in else []
+        arg_out = arg_out if arg_out else []
+        karg_in = karg_in if karg_in else {}
+        karg_out = karg_out if karg_out else {}
+        def temp(self, pos):
+            pass
+        fun_in = fun_in if fun_in else temp
+        fun_out = fun_out if fun_out else temp
+        # Prendi numero e grandezza delle celle
+        nX, nY = self.cellNumber
+        cellW, cellH = self.cellSize
+        # Togli il bordo per rendere i calcoli successivi più facili
+        posx, posy = [pos[0] - self.edgeWidth, pos[1] - self.edgeWidth]
+        if (posx < 0 or posx > cellW * nX) or (posy < 0 or posy > cellH * nY):
+            # Fuori dei bordi
+            self.secCursor['current'] = -1
+            # Lancia la funzione
+            value = fun_out(self, pos, tree_pos, *arg_out, **karg_out)
+            # parsa tutte le celle
+            for i, ans in enumerate(self.ans):
+                # Se nella cella selezionata l'oggetto è ResponseBox, lancia il 
+                # mousePress della cella
+                if i < self.n_ans:
+                    def checkResponseBox(item, parent, current, numLine):
+                        if isinstance(item, list):
+                            for numLine, i in enumerate(item):
+                                checkResponseBox(i, parent, current, numLine)
+                        elif isinstance(item, ResponseBox):
+                            item.mouseMove([-1, -1], fun_out = fun_out, 
+                                 arg_out = arg_out, karg_out = karg_out, 
+                                 tree_pos = tree_pos + [current])
+                    checkResponseBox(ans, self, i, 0)
+        else:
+            # Modifica '.current'
+            currentx = min([posx // cellW, nX - 1])
+            currenty = min([posy // cellH, nY - 1])
+            # Aggiusta il valore corrente
+            self.secCursor['current'] = int(currenty * nX + currentx)
+            # Lancia la funzione
+            value = fun_in(self, pos, tree_pos, *arg_in, **karg_in)
+            # parsa tutte le celle
+            for i, ans in enumerate(self.ans):
+                # Se nella cella selezionata l'oggetto è ResponseBox, lancia il 
+                # mouseMove della cella
+                if i < self.n_ans:
+                    def checkResponseBox(item, parent, current, numLine):
+                        if isinstance(item, list):
+                            for numLine, i in enumerate(item):
+                                checkResponseBox(i, parent, current, numLine)
+                        elif isinstance(item, ResponseBox):
+                            item.mouseMove(\
+                                    [posx - cellW * (current % nX) - parent.padx, 
+                                     posy - cellH * ((current // nX) % nY) - 
+                                     parent.pady - parent.inline * numLine], 
+                                     fun_in = fun_in, fun_out = fun_out, 
+                                     arg_in = arg_in, arg_out = arg_out, 
+                                     karg_in = karg_in, karg_out = karg_out, 
+                                     tree_pos = tree_pos + [current])
+                    checkResponseBox(ans, self, i, 0)
+        return value
+        
     def __repr__(self):
         return f"""<class '{__name__}.{self.__class__.__name__}'>:
 .__ans          -> {type(self.__ans)} of {self.n_ans}
@@ -1429,14 +1563,14 @@ class ResponceBox():
     [1] height -> {self.size[1]}
 .__current      -> {self.current}
 .__mode         -> {self.mode}
-.bg             -> {self.bg}
-.textcolor      -> {self.textcolor}
-.fontsize       -> {self.fontsize}
-.fontname       -> {self.fontname}
+.string_kargs   -> {self.string_kargs}
+.inline         -> {self.inline}
+.bg              -> {self.bg}
 .edgeWidth      -> {self.edgeWidth}
 .edgeColor      -> {self.edgeColor}
 .cursorColor    -> {self.cursorColor}
-.inline         -> {self.inline}
+.cursorAlpha    -> {self.cursorAlpha}
+.secCursor      -> {type(self.secCursor)}: {self.secCursor}
 .padx           -> {self.padx}
 .pady           -> {self.pady}
 .__cursor       -> {self.cursor}
@@ -1445,15 +1579,15 @@ class ResponceBox():
 .surface        -> pygame.Surface"""
 
 '''
-CLASSE GAMEBUTTON
+13) CLASSE GAMEBUTTON
 '''
-class GameButton(ResponceBox):
-    '''Una ResponceBox che attiva direttamente la funzione associata in 'command' 
+class GameButton(ResponseBox):
+    '''Una ResponseBox che attiva direttamente la funzione associata in 'command' 
     quando selezionato con il mouse. In 'arg' può essere passata una lista di 
     argomenti da passare a 'command',  mentre in 'karg' puoi passare un dizionario 
     con i keyword arguments.
     NOTA: per funzionare correttamente, deve essere renderizzato in un'altra 
-    ResponceBox con .mousePress() abilitato. Altrimenti bisogna passare alla 
+    ResponseBox con .mousePress() abilitato. Altrimenti bisogna passare alla 
     funzione esplicitamente la posizione relativa del mouse dopo il click.'''
     def __init__(self, size, *args, command = None, arg = None, karg = None, 
                  **kargs):
@@ -1525,8 +1659,8 @@ class GameButton(ResponceBox):
         surf.blit(self.surface, pos)
         # Renderizza il cursore
         if self.cursor:
-            surf.blit(self.cursor_surface, [pos[0] + self.cursor_pos[0], pos[1] + 
-                                            self.cursor_pos[1]])
+            surf.blit(self.cursor_surface, [pos[0] + self.cursor_pos()[0], pos[1] + 
+                                            self.cursor_pos()[1]])
     
     def __repr__(self):
         return f"""<class '{__name__}.{self.__class__.__name__}'>:

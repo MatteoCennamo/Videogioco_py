@@ -164,12 +164,12 @@ AnsBoxSize = (150, 168), AnsParams = {'fontsize': 22, 'padx': 10, 'pady': 15})
 
 def menuOggetti(root):
     '''Apre il Menu degli oggetti.'''
-    prova = gtk.ResponceBox([100, 50], gtk.truncString2List('prova1', 10), 
+    prova = gtk.ResponseBox([100, 50], gtk.truncString2List('prova1', 10), 
                             gtk.truncString2List('prova2', 10), edgeWidth = 1)
-    nested = gtk.ResponceBox([40, 40], *[['1'], ['2'], ['3'], ['4']], 
+    nested = gtk.ResponseBox([40, 40], *[['1'], ['2'], ['3'], ['4']], 
                              disposition = '2x2', edgeWidth = 1, fontsize = 10, 
                              padx = 5, pady = 5, edgeColor = gtk.ORANGE, mode = 'sleep')
-    prova2 = gtk.ResponceBox([100, 100], *[['line: ', '1'], [nested], ['3'], ['4']], 
+    prova2 = gtk.ResponseBox([100, 100], *[['line: ', '1'], [nested], ['3'], ['4']], 
                              disposition = '2x2', edgeWidth = 2, cursorColor = gtk.PURPLE, 
                              mode = 'static')
     import copy
@@ -177,15 +177,15 @@ def menuOggetti(root):
     albero.h = 90
     provaGamestring = gtk.GameString('Questa è una prova per andare a capo.')
     pulsante = gtk.GameButton((90, 30), ['Premi!'], edgeWidth = 4, padx = 18, 
-                              pady = 4, cursor = False, bg = (200, 230, 230))
+                              pady = 4, cursor = False, cellbg = (200, 230, 230))
     ans = gtk.multiQuest(root, '''Seleziona un oggetto.''', "No! Lasciami\nstare!", 
                          "Sì, fammi\nsalvare!", "Più oggetti!", "Un altro", "Ancora!", 
                          "1\n2\n3????????? Ancora", 'Basta', ['Monete:', root.obj['oggetto'][0]], 
                          [prova], ['Forza:', prova2], [albero], [pulsante],
                          gtk.truncString2List(provaGamestring, 90),
-                         AnsBoxSize = (560, 450), #truncAns = 12, 
+                         AnsBoxSize = (560, 450), 
                          AnsParams = {'fontsize': 17, 'padx': 5, 'pady': 10, 
-                                      'disposition': '5x4', 'bg': (250, 240, 240), 
+                                      'disposition': '5x4', 'cellbg': (250, 240, 240), 
                                       'cursor': False, 'mode': 'static'})
 
  # Apre il Menu principale

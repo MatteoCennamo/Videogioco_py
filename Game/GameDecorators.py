@@ -23,20 +23,22 @@ import threading
 2) PER FUNZIONI
 '''
 class ClickerCursor(threading.Thread):
-    '''< Thread > object which performs a request (.start method) with the 
-    provided '.url'. Then it stores the data in '.data' attribute.'''
-    def __init__(self, button = None):
+    '''Oggetto < Thread > responsabile dell'animazione del pulsante quando 
+    viene cliccato.'''
+    def __init__(self, button = None, sleep = .2):
         super().__init__()
-        # GameButton object
+        # Oggetto 'GameButton'
         self.button = button
         # Il Lock serve per non interferire con altri processi
         self.lock = threading.Lock()
+        # Tempo di attesa prima cambiare il background del pulsante
+        self.sleep = sleep  # in secondi
     def run(self):
-        '''Makes the URL request and stores the data in '.data' attribute.'''
+        '''Esegue l'animazione del pulsante.'''
         with self.lock:
             self.button.cursor = True
             self.button.pady += 2
-        time.sleep(0.2)
+        time.sleep(self.sleep)
         with self.lock:
             self.button.cursor = False
             self.button.pady -= 2
@@ -47,8 +49,8 @@ def buttonCommand(fun = None, *, button):
         @functools.wraps(fun)
         def wrapper_buttonCommand(*args, **kargs):
             clicker = ClickerCursor(button)
-            clicker.start()
-            value = fun(*args, **kargs)
+            clicker.start()  # thread per l'animazione del pulsante
+            value = fun(*args, **kargs)  # esegue funzione associata al pulsante
             return value
         return wrapper_buttonCommand
     if fun:
