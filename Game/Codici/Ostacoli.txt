@@ -1,9 +1,0 @@
-ID	PATH	xPOS	yPOS	WIDTH	HEIGHT	NOTE
-0	./Sprites/Alberi.png	4	0	24	32	# Abete
-1	./Sprites/Alberi.png	36	0	24	32	# Cipresso
-2	./Sprites/Alberi.png	96	0	32	32	# Albero grande
-3	./Sprites/Alberi.png	160	16	16	16	# Cespuglio
-4	./Sprites/Rocce.png	2	1	34	34	# Roccia grande
-5	./Sprites/Rocce.png	111	15	18	17	# Roccia piccola
-6	./Sprites/Rocce.png	2	42	34	34	# Roccia grande (viola)
-7	./Sprites/Rocce.png	111	56	18	17	# Roccia piccola (viola)

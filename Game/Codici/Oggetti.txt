@@ -1,2 +1,0 @@
-ID	PATH	xPOS	yPOS	WIDTH	HEIGHT	NOTE
-0	./Sprites/Oggetti.png	0	0	7	12	# Moneta
